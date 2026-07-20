@@ -1866,7 +1866,8 @@ function vIcon(sym, small){ const s=VAULT_SYMBOLS[sym];
   return '<span class="vchip'+(small?' sm':'')+'" style="background:'+s.col+'"><svg class="ic-svg" viewBox="0 0 24 24">'+VSHAPE[s.icon]+'</svg></span>'; }
 
 function vaultConfig(level){
-  const T={1:[2,3,false],2:[3,4,false],3:[3,5,false],4:[4,5,false],5:[4,6,false],6:[4,6,true],7:[5,6,false],8:[5,6,true]};
+  // Capped at 4 slots / 4 symbols max — difficulty ramps via slots, symbols, then duplicates.
+  const T={1:[2,3,false],2:[3,3,false],3:[3,4,false],4:[4,4,false],5:[3,4,true],6:[4,4,true],7:[4,4,true],8:[4,4,true]};
   const [length,colors,allowDup]=T[Math.max(1,Math.min(8,level))]; return {length,colors,allowDup};
 }
 function buildVault(level){
@@ -2715,7 +2716,7 @@ loadProgress();
 renderMap();
 
 // Build tag — tiny corner label so you can confirm which version a device is running.
-const BUILD='v13';
+const BUILD='v14';
 (function(){ const v=document.createElement('div'); v.textContent='build '+BUILD;
   v.style.cssText='position:fixed;right:6px;bottom:5px;font:600 10px system-ui;color:rgba(255,255,255,.28);z-index:60;pointer-events:none;';
   document.body.appendChild(v); })();
