@@ -2,8 +2,8 @@
 
 An installable web game for an advanced young learner. Rebuild a ruined world
 one **Feat** at a time by solving logic puzzles that stretch spatial reasoning
-and planning — wrapped in a bold "explorer at dusk" adventure. This build has **all five** Feats fully playable — **"Claim the Castle"**
-(power-routing), **"Light the Beacon"** (block coding), **"Purify the Well"**
+and planning — wrapped in a bold "explorer at dusk" adventure. This build has **all five** Feats fully playable — **"Defend the Treehouse"**
+(a physics slingshot — trajectory & angles), **"Light the Beacon"** (block coding), **"Purify the Well"**
 (fractions & ratios), **"Crack the Vault"** (deduction / code-breaking), and
 **"Rebuild the Bridge"** (balance algebra) — a complete campaign, with the
 world-map, salvage, and per-Feat adaptive difficulty tying it together.
@@ -61,7 +61,7 @@ On her iPad or iPhone:
 1. Open the GitHub Pages link **in Safari** (this part must be Safari).
 2. Tap the **Share** button (the square with an up-arrow).
 3. Scroll down and tap **Add to Home Screen**, then **Add**.
-4. A castle icon appears on her home screen. Tapping it launches the game
+4. The game's icon appears on her home screen. Tapping it launches the game
    **full-screen with no browser bars** — and it works even with no internet.
 
 To update the game later, just re-upload a changed `index.html` to the repo
@@ -72,9 +72,13 @@ version). Her saved progress stays on the device.
 
 ## How to play
 
-**Claim the Castle** — Tap pipe tiles to rotate them and route power from the
-**⚡ reactor** to every **🏰 tower**. **Reset** restarts the same puzzle, **Hint**
-fixes one pipe, **New** deals a fresh board.
+**Defend the Treehouse** — An *Angry Birds*-style physics launcher. Drag back from
+the slingshot to aim, then let go to fling a goo-bomb in a gravity arc — bank it off
+**bounce pads** and lob it over **walls** to splat every goop-monster. A live dotted
+trajectory previews the shot while she aims, so she's really reasoning about **angle
+and power** (projectile motion). Every generated level is verified solvable before it's
+dealt. **Reset** re-racks the same layout, **Hint** auto-aims one shot so she can watch
+the arc, **New** deals a fresh field.
 
 **Light the Beacon** — Build a little *program* to fly the drone to the
 **📡 beacon**, collecting every **💎 power cell**. Tap blocks to add them:
@@ -112,13 +116,14 @@ solves. Claiming a Feat earns salvage and unlocks the next one on the map.
 
 Everything runs client-side in one HTML file: the puzzle logic, an HTML5 Canvas
 renderer, pointer/touch input, adaptive difficulty, and progress saved to the
-device via `localStorage`. The puzzle generator is procedural and was
-stress-tested across **3,200 generated boards on all 8 difficulty levels** —
-every one is solvable, always has pipes to turn, and never starts already
-finished.
+device via `localStorage`. Every Feat's generator is procedural and self-verifying:
+the launcher, for example, uses one deterministic physics trace shared by the aim
+preview, the actual fire, and the solvability check — so the dotted preview matches
+the real shot exactly, and each level is proven clearable (across **960 generated
+fields on all 8 difficulty levels**, every one was reachable) before it's ever dealt.
 
 ## What's next
 
-Three Feats down. The map still lists *Crack the Vault* (deduction) and
-*Rebuild the Bridge* (balance-algebra) — each a new puzzle module that reuses
-this same map, salvage, and difficulty plumbing.
+The full five-Feat campaign is complete and deployed. Future ideas: new Feats that
+reuse this same map / salvage / adaptive-difficulty plumbing, a "boss goop-blob"
+showdown, and per-child profiles.

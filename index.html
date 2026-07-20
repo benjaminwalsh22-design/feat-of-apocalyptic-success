@@ -129,7 +129,7 @@
   .stat .v{ font-weight:900; font-size:17px; }
   .stat .l{ font-size:9px; letter-spacing:.4px; color:var(--muted); text-transform:uppercase; }
 
-  #board,#b-board,#w-board,#br-board{ display:block; margin:0 auto; border-radius:18px; touch-action:none;
+  #board,#b-board,#w-board,#br-board,#l-board{ display:block; margin:0 auto; border-radius:18px; touch-action:none;
     background:#0b1620; border:1px solid rgba(120,200,190,.18);
     box-shadow: inset 0 0 30px rgba(0,0,0,.5), 0 8px 20px rgba(0,0,0,.4); }
   .hint-line{ text-align:center; color:var(--muted); font-size:13px; margin:11px 8px 12px; line-height:1.45; }
@@ -272,7 +272,7 @@
   .hud .stat .i{ color:var(--cyan); }
   .hud .stat .v{ font-family:system-ui,-apple-system,"Arial Black","Segoe UI",sans-serif; font-weight:900; -webkit-text-stroke:.5px var(--outline); paint-order:stroke fill; }
 
-  #board,#b-board,#w-board,#br-board{ border:3px solid var(--outline); border-radius:16px; background:#1a1030; box-shadow:5px 6px 0 var(--outline); }
+  #board,#b-board,#w-board,#br-board,#l-board{ border:3px solid var(--outline); border-radius:16px; background:#1a1030; box-shadow:5px 6px 0 var(--outline); }
 
   .blk{ border:3px solid var(--outline); color:var(--outline); box-shadow:0 4px 0 var(--outline); border-radius:12px; text-transform:uppercase; font-weight:800; }
   .blk.move{ background:var(--moss);} .blk.turn{ background:var(--cyan);} .blk.loop{ background:var(--gold);} .blk.cond{ background:var(--pink); color:var(--outline);}
@@ -353,6 +353,30 @@
       <button class="btn" id="reset-btn"><span data-ic="reset"></span> Reset</button>
       <button class="btn" id="hint-btn"><span data-ic="spark"></span> Hint</button>
       <button class="btn" id="new-btn"><span data-ic="grid"></span> New</button>
+    </div>
+  </section>
+
+  <!-- ============ LAUNCHER SCREEN (Sling & Aim) ============ -->
+  <section id="launch-screen" class="screen">
+    <div class="topbar">
+      <button class="back" id="l-back"><span data-ic="back"></span> Map</button>
+      <div class="title">Treehouse HQ</div>
+    </div>
+    <div class="hud metal">
+      <div class="stat"><div class="i" data-ic="target"></div><div class="v" id="l-targets">0</div><div class="l">Goops</div></div>
+      <div class="stat"><div class="i" data-ic="cursor"></div><div class="v" id="l-shots">0</div><div class="l">Shots</div></div>
+      <div class="stat"><div class="i" data-ic="bars"></div><div class="v" id="l-level">Lv 1</div><div class="l">Challenge</div></div>
+      <div class="stat"><div class="i" data-ic="crate"></div><div class="v" id="l-salvage">0</div><div class="l">Salvage</div></div>
+    </div>
+
+    <canvas id="l-board" width="480" height="480"></canvas>
+
+    <div class="hint-line">Drag back from the slingshot to aim, then let go to fling a goo-bomb — splat every goop-monster!</div>
+
+    <div class="controls" style="margin-top:10px;">
+      <button class="btn" id="l-reset"><span data-ic="reset"></span> Reset</button>
+      <button class="btn" id="l-hint"><span data-ic="spark"></span> Hint</button>
+      <button class="btn" id="l-new"><span data-ic="grid"></span> New</button>
     </div>
   </section>
 
@@ -570,7 +594,8 @@ const ICONS = {
   minus:'<path d="M5 11h14v2H5z"/>',
   bridge:'<path d="M2 15c5-7 15-7 20 0" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M2 15v5M22 15v5M8 12.5v7.5M16 12.5v7.5M12 11v9" stroke="currentColor" stroke-width="1.7" fill="none"/>',
   sound:'<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 8.5a4.5 4.5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-  mute:'<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9l6 6M22 9l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>'
+  mute:'<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9l6 6M22 9l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>',
+  target:'<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.4" fill="currentColor"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4" stroke="currentColor" stroke-width="2"/>'
 };
 function icon(name, extra){ return '<svg class="ic-svg'+(extra?' '+extra:'')+'" viewBox="0 0 24 24" aria-hidden="true">'+(ICONS[name]||'')+'</svg>'; }
 function paintIcons(root){ (root||document).querySelectorAll('[data-ic]').forEach(el=>{ el.innerHTML=icon(el.dataset.ic); el.removeAttribute('data-ic'); }); }
@@ -755,9 +780,9 @@ const canvas=$('board'), ctx=canvas.getContext('2d');
 let boardPx=480, cell=60;
 
 const FEATS=[
-  {id:'castle', title:'Claim the Castle', icon:'🏰', playable:true, reward:50,
-   desc:'Route power through the ruins to relight the towers and raise your flag.',
-   skill:'Spatial Logic · Power Routing'},
+  {id:'castle', title:'Defend the Treehouse', icon:'🏰', playable:true, reward:50,
+   desc:'Sling goo-bombs — arc them over walls and off bounce-pads to splat every goop-monster!',
+   skill:'Trajectory & Angles · Physics Aim'},
   {id:'beacon', title:'Light the Beacon', icon:'📡', playable:true, reward:60,
    desc:'Program the signal-drone with loops and if-then rules to call survivors.',
    skill:'Coding · Loops & Conditionals'},
@@ -992,7 +1017,7 @@ function buildOverworld(){
     gEl.addEventListener('click', ()=>{
       if(!nodeUnlocked(idx)){ Sound.denied(); return; }
       Sound.squish();
-      if(f.id==='castle') startGame();
+      if(f.id==='castle') startLaunch();
       else if(f.id==='beacon') startBeacon();
       else if(f.id==='well') startWell();
       else if(f.id==='vault') startVault();
@@ -1233,7 +1258,7 @@ $('hint-btn').onclick=()=>{
 };
 $('new-btn').onclick=()=>{ startGame(); };
 $('back-btn').onclick=()=>{ stopFlow(); show('map-screen'); renderMap(); };
-$('win-again').onclick=()=>{ $('win-overlay').classList.remove('show'); ({castle:startGame,beacon:startBeacon,well:startWell,vault:startVault,bridge:startBridge}[G.lastFeat]||startGame)(); };
+$('win-again').onclick=()=>{ $('win-overlay').classList.remove('show'); ({castle:startLaunch,beacon:startBeacon,well:startWell,vault:startVault,bridge:startBridge}[G.lastFeat]||startGame)(); };
 $('win-map').onclick=()=>{ $('win-overlay').classList.remove('show'); show('map-screen'); renderMap(); };
 
 // ---------- add-to-home-screen hint ----------
@@ -2095,14 +2120,256 @@ $('br-reset').onclick=()=>{ if(BR.solvedNow) return; BR.board.guess=1; renderBri
 $('br-hint').onclick =bridgeHint;
 $('br-new').onclick  =()=>startBridge();
 
+// =====================================================================
+//  FEAT 1 (replaces the old pipe puzzle) — Defend the Treehouse
+//  A deterministic "Sling & Aim" launcher: gravity, walls, bounce pads.
+// =====================================================================
+const L_GRAV=1.35, L_MAXV=1.7, L_DT=1/180, L_MAXSTEPS=1500, L_RAD=0.017;
+const L_WALLREST=0.55, L_GROUNDREST=0.4, L_FRICTION=0.9, L_PADBOOST=1.18;
+const L_MAXPULL=0.28, L_K=3.4;
+
+function launchConfig(level){
+  const T={1:[1,0,0],2:[2,0,0],3:[2,1,0],4:[3,1,1],5:[3,2,1],6:[3,2,2],7:[4,3,2],8:[4,3,2]};
+  const [targets,walls,pads]=T[Math.max(1,Math.min(8,level))]; return {targets,walls,pads};
+}
+function segDistInfo(px,py,pd){
+  const ax=pd.x1,ay=pd.y1,bx=pd.x2,by=pd.y2, abx=bx-ax, aby=by-ay;
+  const t=Math.max(0,Math.min(1,((px-ax)*abx+(py-ay)*aby)/((abx*abx+aby*aby)||1e-9)));
+  const cx=ax+abx*t, cy=ay+aby*t; let nx=px-cx, ny=py-cy; const d=Math.hypot(nx,ny)||1e-9;
+  return {dist:d, nx:nx/d, ny:ny/d};
+}
+// Deterministic trajectory trace — shared by preview, firing, and solvability verify.
+function traceShot(world, vx, vy){
+  let x=world.launcher.x, y=world.launcher.y;
+  const pts=[{x,y}], hits=[], hitset=new Set(), gy=world.groundY;
+  for(let s=0;s<L_MAXSTEPS;s++){
+    vy += L_GRAV*L_DT; x += vx*L_DT; y += vy*L_DT;
+    if(x<L_RAD){ x=L_RAD; vx=Math.abs(vx)*L_WALLREST; }
+    if(x>1-L_RAD){ x=1-L_RAD; vx=-Math.abs(vx)*L_WALLREST; }
+    if(y<L_RAD){ y=L_RAD; vy=Math.abs(vy)*L_WALLREST; }
+    for(const w of world.walls){
+      if(x>w.x-L_RAD && x<w.x+w.w+L_RAD && y>w.y-L_RAD && y<w.y+w.h+L_RAD){
+        const dl=x-(w.x-L_RAD), dr=(w.x+w.w+L_RAD)-x, dtp=y-(w.y-L_RAD), db=(w.y+w.h+L_RAD)-y;
+        const m=Math.min(dl,dr,dtp,db);
+        if(m===dl){ x=w.x-L_RAD; vx=-Math.abs(vx)*L_WALLREST; }
+        else if(m===dr){ x=w.x+w.w+L_RAD; vx=Math.abs(vx)*L_WALLREST; }
+        else if(m===dtp){ y=w.y-L_RAD; vy=-Math.abs(vy)*L_WALLREST; }
+        else { y=w.y+w.h+L_RAD; vy=Math.abs(vy)*L_WALLREST; }
+      }
+    }
+    for(const pd of world.pads){ const r=segDistInfo(x,y,pd);
+      if(r.dist<L_RAD+0.006){ const dot=vx*r.nx+vy*r.ny;
+        if(dot<0){ vx=(vx-2*dot*r.nx)*L_PADBOOST; vy=(vy-2*dot*r.ny)*L_PADBOOST; x+=r.nx*(L_RAD+0.006-r.dist); y+=r.ny*(L_RAD+0.006-r.dist); } } }
+    if(y>gy-L_RAD){ y=gy-L_RAD; if(vy>0) vy=-vy*L_GROUNDREST; vx*=L_FRICTION;
+      if(Math.abs(vy)<0.02 && Math.abs(vx)<0.03){ pts.push({x,y}); return {pts,hits,ended:'settle'}; } }
+    for(let ti=0;ti<world.targets.length;ti++){ const t=world.targets[ti]; if(!t.alive||hitset.has(ti)) continue;
+      const dx=x-t.x, dy=y-t.y; if(dx*dx+dy*dy < (L_RAD+t.r)*(L_RAD+t.r)){ hitset.add(ti); hits.push({step:pts.length, target:ti}); } }
+    pts.push({x,y});
+    if(y>1.2 || x>1.25) return {pts,hits,ended:'off'};
+  }
+  return {pts,hits,ended:'timeout'};
+}
+function launchReachAll(world){
+  const covered=new Set();
+  for(let a=16;a<=84;a+=3){ for(const pw of [1.15,1.0,0.88,0.76,0.64]){
+    const rad=a*Math.PI/180, sp=L_MAXV*pw, r=traceShot(world, Math.cos(rad)*sp, -Math.sin(rad)*sp);
+    for(const h of r.hits) covered.add(h.target);
+    if(covered.size===world.targets.length) return true;
+  }}
+  return covered.size===world.targets.length;
+}
+function buildLaunch(level){
+  const cfg=launchConfig(level), R=Math.random;
+  for(let attempt=0; attempt<160; attempt++){
+    const groundY=0.82, launcher={x:0.12, y:groundY-0.05};
+    const walls=[], pads=[], targets=[];
+    for(let i=0;i<cfg.walls;i++){ const ww=0.045+R()*0.045, wh=0.12+R()*0.30, wx=0.34+R()*0.42;
+      walls.push({x:wx, y:groundY-wh, w:ww, h:wh}); }
+    for(let i=0;i<cfg.pads;i++){ const cx=0.42+R()*0.4, cy=0.42+R()*0.28, ang=(-58+R()*36)*Math.PI/180, len=0.13;
+      pads.push({x1:cx-Math.cos(ang)*len/2, y1:cy-Math.sin(ang)*len/2, x2:cx+Math.cos(ang)*len/2, y2:cy+Math.sin(ang)*len/2}); }
+    let ok=true;
+    for(let i=0;i<cfg.targets;i++){ let placed=false;
+      for(let tn=0;tn<50 && !placed;tn++){ const tx=0.42+R()*0.5, ty=0.26+R()*(groundY-0.30), tr=0.045;
+        if(walls.some(w=> tx>w.x-0.055 && tx<w.x+w.w+0.055 && ty>w.y-0.055 && ty<w.y+w.h+0.055)) continue;
+        if(pads.some(pd=> segDistInfo(tx,ty,pd).dist<0.07)) continue;
+        if(targets.some(o=> Math.hypot(o.x-tx,o.y-ty)<0.13)) continue;
+        targets.push({x:tx,y:ty,r:tr,alive:true}); placed=true; }
+      if(!placed){ ok=false; break; } }
+    if(!ok) continue;
+    const world={ level, groundY, launcher, walls, pads, targets };
+    if(launchReachAll(world)) return world;
+  }
+  return { level, groundY:0.82, launcher:{x:0.12,y:0.77}, walls:[], pads:[], targets:[{x:0.68,y:0.5,r:0.05,alive:true}] };
+}
+function launchSolved(w){ return w.targets.every(t=>!t.alive); }
+function findAim(world, target){
+  for(let a=18;a<=84;a+=2){ for(const pw of [1.15,1.0,0.9,0.8,0.7,0.6]){
+    const rad=a*Math.PI/180, sp=L_MAXV*pw, r=traceShot(world, Math.cos(rad)*sp, -Math.sin(rad)*sp);
+    if(r.hits.some(h=> world.targets[h.target]===target)) return {vx:Math.cos(rad)*sp, vy:-Math.sin(rad)*sp}; } }
+  return null;
+}
+
+// ---- controller ----
+const LA={ world:null, shots:0, hintUsed:false, solved:false, startTime:0,
+  dragging:false, dragX:0, dragY:0, aimVx:0, aimVy:0, preview:null,
+  firing:false, pts:null, hits:null, idx:0, applied:null, parts:[] };
+const lcanvas=$('l-board'), lctx=lcanvas.getContext('2d');
+let lPx=480, lAnimRAF=null;
+
+function startLaunch(){
+  G.lastFeat='castle';
+  LA.world=buildLaunch(G.levels.castle);
+  LA.shots=0; LA.hintUsed=false; LA.solved=false; LA.startTime=Date.now();
+  LA.dragging=false; LA.preview=null; LA.firing=false; LA.parts=[];
+  show('launch-screen'); fitLaunch(); updateLaunchHUD(); startLaunchAnim();
+}
+function fitLaunch(){
+  const size=Math.min(window.innerWidth-32,520), dpr=window.devicePixelRatio||1;
+  lPx=size; lcanvas.style.width=size+'px'; lcanvas.style.height=size+'px';
+  lcanvas.width=Math.round(size*dpr); lcanvas.height=Math.round(size*dpr);
+  lctx.setTransform(dpr,0,0,dpr,0,0);
+  if(LA.world) drawLaunch();
+}
+function startLaunchAnim(){ if(lAnimRAF) return;
+  const loop=()=>{ if($('launch-screen').classList.contains('active')){ drawLaunch(); lAnimRAF=requestAnimationFrame(loop); } else lAnimRAF=null; };
+  lAnimRAF=requestAnimationFrame(loop);
+}
+function stopLaunch(){ if(lAnimRAF){ cancelAnimationFrame(lAnimRAF); lAnimRAF=null; } }
+function updateLaunchHUD(){
+  const alive=LA.world.targets.filter(t=>t.alive).length;
+  $('l-targets').textContent=alive; $('l-shots').textContent=LA.shots;
+  $('l-level').textContent='Lv '+G.levels.castle; $('l-salvage').textContent=G.salvage;
+}
+function launchAim(e){
+  const rect=lcanvas.getBoundingClientRect();
+  const nx=(e.clientX-rect.left)/rect.width, ny=(e.clientY-rect.top)/rect.height;
+  LA.dragX=nx; LA.dragY=ny;
+  let vx=(LA.world.launcher.x-nx)*L_K, vy=(LA.world.launcher.y-ny)*L_K;
+  const sp=Math.hypot(vx,vy); if(sp>L_MAXV){ vx=vx/sp*L_MAXV; vy=vy/sp*L_MAXV; }
+  LA.aimVx=vx; LA.aimVy=vy;
+  LA.preview = (Math.hypot(nx-LA.world.launcher.x, ny-LA.world.launcher.y)>0.03) ? traceShot(LA.world, vx, vy).pts : null;
+}
+lcanvas.addEventListener('pointerdown', e=>{ if(LA.firing||LA.solved) return; LA.dragging=true; launchAim(e); });
+lcanvas.addEventListener('pointermove', e=>{ if(!LA.dragging) return; launchAim(e); });
+lcanvas.addEventListener('pointerup',   e=>{ if(!LA.dragging) return; LA.dragging=false; if(LA.preview) fireLaunch(LA.aimVx, LA.aimVy); LA.preview=null; });
+lcanvas.addEventListener('pointerleave',e=>{ if(LA.dragging){ LA.dragging=false; if(LA.preview) fireLaunch(LA.aimVx, LA.aimVy); LA.preview=null; } });
+
+function fireLaunch(vx,vy){
+  if(LA.firing||LA.solved) return;
+  const r=traceShot(LA.world, vx, vy);
+  LA.pts=r.pts; LA.hits=r.hits.slice(); LA.idx=0; LA.applied=new Set(); LA.firing=true;
+  LA.shots++; Sound.squish(0.9); updateLaunchHUD();
+}
+function launchSplat(x,y){
+  const cols=['#8bff5a','#5fd43a','#a6ff7a','#ffffff'];
+  for(let i=0;i<16;i++) LA.parts.push({ x:x*lPx, y:y*lPx, vx:(Math.random()-.5)*7, vy:(Math.random()-.5)*7-1.5, life:1, r:2+Math.random()*3, col:cols[i%cols.length] });
+}
+function launchWin(){
+  if(LA.solved) return; LA.solved=true;
+  const secs=(Date.now()-LA.startTime)/1000, par=LA.world.targets.length+1;
+  const fast=secs<60, eff=LA.shots<=par;
+  if(fast&&eff&&!LA.hintUsed) G.levels.castle=Math.min(8,G.levels.castle+2);
+  else if(eff&&!LA.hintUsed) G.levels.castle=Math.min(8,G.levels.castle+1);
+  else if(LA.hintUsed) G.levels.castle=Math.max(1,G.levels.castle-1);
+  const gained=claimFeat('castle', FEATS[0].reward);
+  updateLaunchHUD(); Sound.win();
+  $('win-title').textContent='Base Defended!';
+  $('win-flag').innerHTML=icon('target');
+  $('win-msg').textContent='Every goop-monster splatted in '+LA.shots+' shot'+(LA.shots===1?'':'s')+'! The treehouse is safe.';
+  $('win-reward').textContent='+'+gained+' salvage';
+  setTimeout(()=>$('win-overlay').classList.add('show'), 450);
+}
+
+// ---- rendering ----
+function nX(v){ return v*lPx; }
+function rrectL(x,y,w,h,r){ lctx.beginPath(); lctx.moveTo(x+r,y); lctx.arcTo(x+w,y,x+w,y+h,r); lctx.arcTo(x+w,y+h,x,y+h,r); lctx.arcTo(x,y+h,x,y,r); lctx.arcTo(x,y,x+w,y,r); lctx.closePath(); }
+function drawGoop(cx,cy,r){
+  lctx.save();
+  lctx.fillStyle='#5fd43a'; lctx.strokeStyle='#160f22'; lctx.lineWidth=3;
+  lctx.beginPath(); lctx.arc(cx,cy,r,Math.PI,0); lctx.bezierCurveTo(cx+r,cy+r*0.7, cx+r*0.4,cy+r*1.1, cx,cy+r*0.7); lctx.bezierCurveTo(cx-r*0.4,cy+r*1.1, cx-r,cy+r*0.7, cx-r,cy); lctx.closePath(); lctx.fill(); lctx.stroke();
+  lctx.fillStyle='#fff'; lctx.beginPath(); lctx.arc(cx-r*0.35,cy-r*0.2,r*0.34,0,7); lctx.fill(); lctx.stroke();
+  lctx.beginPath(); lctx.arc(cx+r*0.4,cy-r*0.25,r*0.28,0,7); lctx.fill(); lctx.stroke();
+  lctx.fillStyle='#160f22'; lctx.beginPath(); lctx.arc(cx-r*0.3,cy-r*0.12,r*0.15,0,7); lctx.fill();
+  lctx.beginPath(); lctx.arc(cx+r*0.44,cy-r*0.18,r*0.13,0,7); lctx.fill();
+  lctx.strokeStyle='#160f22'; lctx.lineWidth=2.5; lctx.beginPath(); lctx.arc(cx,cy+r*0.28,r*0.3,0.15*Math.PI,0.85*Math.PI); lctx.stroke();
+  lctx.restore();
+}
+function drawLaunch(){
+  const w=LA.world; if(!w) return; const S=lPx;
+  lctx.clearRect(0,0,S,S);
+  // sky
+  const sky=lctx.createLinearGradient(0,0,0,S); sky.addColorStop(0,'#2a1650'); sky.addColorStop(1,'#1a1030');
+  lctx.fillStyle=sky; lctx.fillRect(0,0,S,S);
+  // ground
+  const gy=nX(w.groundY);
+  lctx.fillStyle='#274b30'; lctx.fillRect(0,gy,S,S-gy);
+  lctx.strokeStyle='#160f22'; lctx.lineWidth=4; lctx.beginPath(); lctx.moveTo(0,gy); lctx.lineTo(S,gy); lctx.stroke();
+  lctx.strokeStyle='#3fb96a'; lctx.lineWidth=3; lctx.beginPath(); lctx.moveTo(0,gy+3); lctx.lineTo(S,gy+3); lctx.stroke();
+  // walls
+  for(const wl of w.walls){ const x=nX(wl.x),y=nX(wl.y),ww=nX(wl.w),hh=nX(wl.h);
+    lctx.fillStyle='#5a5a6e'; lctx.strokeStyle='#160f22'; lctx.lineWidth=3; rrectL(x,y,ww,hh,4); lctx.fill(); lctx.stroke();
+    lctx.fillStyle='rgba(255,210,30,.25)'; for(const [rx,ry] of [[x+6,y+6],[x+ww-6,y+6],[x+6,y+hh-6],[x+ww-6,y+hh-6]]){ lctx.beginPath(); lctx.arc(rx,ry,2.4,0,7); lctx.fill(); } }
+  // bounce pads
+  for(const pd of w.pads){ const x1=nX(pd.x1),y1=nX(pd.y1),x2=nX(pd.x2),y2=nX(pd.y2);
+    lctx.strokeStyle='#160f22'; lctx.lineWidth=12; lctx.lineCap='round'; lctx.beginPath(); lctx.moveTo(x1,y1); lctx.lineTo(x2,y2); lctx.stroke();
+    lctx.strokeStyle='#ffd21e'; lctx.lineWidth=7; lctx.beginPath(); lctx.moveTo(x1,y1); lctx.lineTo(x2,y2); lctx.stroke();
+    lctx.strokeStyle='#160f22'; lctx.lineWidth=2; lctx.setLineDash([5,5]); lctx.beginPath(); lctx.moveTo(x1,y1); lctx.lineTo(x2,y2); lctx.stroke(); lctx.setLineDash([]); }
+  // targets
+  for(const t of w.targets){ if(t.alive) drawGoop(nX(t.x), nX(t.y), nX(t.r)); }
+  // slingshot + base
+  const lx=nX(w.launcher.x), ly=nX(w.launcher.y);
+  lctx.strokeStyle='#160f22'; lctx.lineWidth=3; lctx.fillStyle='#6b431f';
+  rrectL(lx-6,ly, 12, gy-ly, 3); lctx.fill(); lctx.stroke();               // post
+  lctx.lineWidth=6; lctx.strokeStyle='#8a5a2b';
+  lctx.beginPath(); lctx.moveTo(lx-2,ly+4); lctx.lineTo(lx-13,ly-16); lctx.moveTo(lx+2,ly+4); lctx.lineTo(lx+13,ly-16); lctx.stroke();
+  lctx.lineWidth=1.5; lctx.strokeStyle='#160f22';
+  lctx.beginPath(); lctx.moveTo(lx-2,ly+4); lctx.lineTo(lx-13,ly-16); lctx.moveTo(lx+2,ly+4); lctx.lineTo(lx+13,ly-16); lctx.stroke();
+
+  // aim: band + ball + trajectory preview
+  if(LA.dragging && LA.preview){
+    const bx=nX(LA.dragX), by=nX(LA.dragY);
+    lctx.strokeStyle='#e64d52'; lctx.lineWidth=4; lctx.beginPath(); lctx.moveTo(lx-13,ly-16); lctx.lineTo(bx,by); lctx.moveTo(lx+13,ly-16); lctx.lineTo(bx,by); lctx.stroke();
+    lctx.fillStyle='#7ee653'; lctx.strokeStyle='#160f22'; lctx.lineWidth=2.5; lctx.beginPath(); lctx.arc(bx,by,nX(L_RAD)+2,0,7); lctx.fill(); lctx.stroke();
+    for(let i=4;i<LA.preview.length;i+=5){ const pp=LA.preview[i]; lctx.fillStyle='rgba(255,255,255,'+Math.max(0.12,1-i/LA.preview.length)+')'; lctx.beginPath(); lctx.arc(nX(pp.x),nX(pp.y),2.6,0,7); lctx.fill(); }
+  } else if(!LA.firing && !LA.solved){
+    lctx.fillStyle='#7ee653'; lctx.strokeStyle='#160f22'; lctx.lineWidth=2.5; lctx.beginPath(); lctx.arc(lx,ly-14,nX(L_RAD)+2,0,7); lctx.fill(); lctx.stroke();
+  }
+
+  // flying projectile
+  if(LA.firing){
+    for(let k=0;k<4 && LA.firing;k++){
+      if(LA.idx>=LA.pts.length-1){ LA.firing=false; if(!launchSolved(w)) updateLaunchHUD(); else launchWin(); break; }
+      LA.idx++;
+      for(const h of LA.hits){ if(h.step<=LA.idx && !LA.applied.has(h.target)){ const t=w.targets[h.target]; if(t.alive){ t.alive=false; LA.applied.add(h.target); launchSplat(t.x,t.y); Sound.squish(1.2); updateLaunchHUD(); } } }
+    }
+    if(LA.firing){ const p=LA.pts[LA.idx]; const bx=nX(p.x), by=nX(p.y);
+      lctx.save(); lctx.shadowColor='rgba(139,255,90,.7)'; lctx.shadowBlur=8;
+      lctx.fillStyle='#7ee653'; lctx.strokeStyle='#160f22'; lctx.lineWidth=2.5; lctx.beginPath(); lctx.arc(bx,by,nX(L_RAD)+2,0,7); lctx.fill(); lctx.stroke(); lctx.restore(); }
+    else if(launchSolved(w) && !LA.solved) launchWin();
+  }
+
+  // splat particles
+  if(LA.parts.length){ let alive=false;
+    for(const p of LA.parts){ p.x+=p.vx; p.y+=p.vy; p.vy+=0.35; p.life-=0.03; if(p.life>0){ alive=true; lctx.globalAlpha=Math.max(0,p.life); lctx.fillStyle=p.col; lctx.beginPath(); lctx.arc(p.x,p.y,p.r,0,7); lctx.fill(); } }
+    lctx.globalAlpha=1; if(!alive) LA.parts=[]; }
+}
+
+$('l-back').onclick =()=>{ stopLaunch(); show('map-screen'); renderMap(); };
+$('l-reset').onclick=()=>{ if(LA.firing) return; LA.world.targets.forEach(t=>t.alive=true); LA.shots=0; LA.solved=false; LA.parts=[]; updateLaunchHUD(); };
+$('l-new').onclick  =()=>startLaunch();
+$('l-hint').onclick =()=>{ if(LA.firing||LA.solved) return; const t=LA.world.targets.find(t=>t.alive); if(!t) return;
+  const aim=findAim(LA.world,t); LA.hintUsed=true;
+  if(aim){ fireLaunch(aim.vx,aim.vy); toast('Auto-aim — watch the arc!'); } else toast('Tricky one — try a high, loopy arc!'); };
+
 // ---------- boot ----------
 // Small public namespace (also handy for automated testing).
 window.FOAS = { makePuzzle, buildCandidate, isSolved, optimalMoves, computePower, config,
                 buildBeacon, runBeaconProgram, solveBeacon, countBlocks, beaconConfig,
                 buildWell, wellSolved, wellOptimal, wellConfig,
                 buildVault, vaultFeedback, vaultConfig,
-                buildBridge, bridgeLeft, bridgeRight, bridgeSolved };
-window.addEventListener('resize', ()=>{ fitCanvas(); fitBeacon(); fitWell(); fitBridge(); });
+                buildBridge, bridgeLeft, bridgeRight, bridgeSolved,
+                buildLaunch, traceShot, launchReachAll, launchSolved, findAim };
+window.addEventListener('resize', ()=>{ fitCanvas(); fitBeacon(); fitWell(); fitBridge(); fitLaunch(); });
 paintIcons();      // fill all static [data-ic] placeholders with vector icons
 Sound.load();
 (function(){ const mb=$('mute-btn');
