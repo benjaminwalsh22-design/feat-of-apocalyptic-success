@@ -5,8 +5,8 @@ one **Feat** at a time by solving logic puzzles that stretch spatial reasoning
 and planning — wrapped in a bold "explorer at dusk" adventure. This build has **all five** Feats fully playable — **"Defend the Treehouse"**
 (a physics slingshot — trajectory & angles), **"Light the Beacon"** (block coding), **"Purify the Well"**
 (fractions & ratios), **"Crack the Vault"** (deduction / code-breaking), and
-**"Rebuild the Bridge"** (balance algebra) — a complete campaign, with the
-world-map, salvage, and per-Feat adaptive difficulty tying it together.
+**"Junkyard Dash"** (a reflex-and-timing obstacle-runner) — a complete campaign,
+with the world-map, salvage, and per-Feat adaptive difficulty tying it together.
 
 **Art direction — comic-book "kid-built fort vs. goop-monsters."** A high-energy
 middle-grade graphic-novel look (think *Last Kids on Earth*): bold ink outlines,
@@ -101,12 +101,17 @@ right symbol in the right slot, **yellow** = right symbol in the wrong slot), an
 she narrows it down by logic. Symbols are double-encoded by colour *and* shape, so
 it's colourblind-friendly. Crack it to swing the bunker doors open.
 
-**Rebuild the Bridge** — A balance-scale algebra puzzle: the bridge's counterweight
-crates each weigh an unknown amount, and she turns a dial to find it. The scale
-tilts live toward the heavier side and shows both side-totals, so an equation like
-"2 crates + 3 must equal 1 crate + 8" becomes something she can *see* balance —
-early solving-for-x. Balance it and the planks slam down. Clearing it completes the
-whole base.
+**Junkyard Dash** — A *Last Kids on Earth* obstacle-runner and the campaign finale.
+She auto-sprints across the junkyard: **tap the top** of the screen to **jump** wrecked
+cars, **hold the bottom** to **duck** under hanging pipes, and scoop up **gems** and
+temporary **power-ups** — a **magnet** that vacuums gems, a **shield** that soaks one
+hit, and a **boost** that blasts her straight through everything. There are no lives:
+a bump just costs a few gems and a stumble, never a game-over, so she keeps going and
+learns the timing. Reach the bridge to open the way to new lands and complete the whole
+base. Every route is procedurally generated and *proven clearable* before it's dealt —
+one deterministic physics model runs the play, an auto-pilot "Auto-Run" demo, and the
+solvability check, so no layout is ever an unavoidable hit. Gems collected convert to
+bonus salvage.
 
 All Feats have no lives, no timers, and no way to lose, and each has its own
 adaptive challenge level that rises automatically the faster and cleaner she

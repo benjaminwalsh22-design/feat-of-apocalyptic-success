@@ -129,7 +129,7 @@
   .stat .v{ font-weight:900; font-size:17px; }
   .stat .l{ font-size:9px; letter-spacing:.4px; color:var(--muted); text-transform:uppercase; }
 
-  #board,#b-board,#w-board,#br-board,#l-board{ display:block; margin:0 auto; border-radius:18px; touch-action:none;
+  #board,#b-board,#w-board,#br-board,#l-board,#d-board{ display:block; margin:0 auto; border-radius:18px; touch-action:none;
     background:#0b1620; border:1px solid rgba(120,200,190,.18);
     box-shadow: inset 0 0 30px rgba(0,0,0,.5), 0 8px 20px rgba(0,0,0,.4); }
   .hint-line{ text-align:center; color:var(--muted); font-size:13px; margin:11px 8px 12px; line-height:1.45; }
@@ -272,7 +272,7 @@
   .hud .stat .i{ color:var(--cyan); }
   .hud .stat .v{ font-family:system-ui,-apple-system,"Arial Black","Segoe UI",sans-serif; font-weight:900; -webkit-text-stroke:.5px var(--outline); paint-order:stroke fill; }
 
-  #board,#b-board,#w-board,#br-board,#l-board{ border:3px solid var(--outline); border-radius:16px; background:#1a1030; box-shadow:5px 6px 0 var(--outline); }
+  #board,#b-board,#w-board,#br-board,#l-board,#d-board{ border:3px solid var(--outline); border-radius:16px; background:#1a1030; box-shadow:5px 6px 0 var(--outline); }
 
   .blk{ border:3px solid var(--outline); color:var(--outline); box-shadow:0 4px 0 var(--outline); border-radius:12px; text-transform:uppercase; font-weight:800; }
   .blk.move{ background:var(--moss);} .blk.turn{ background:var(--cyan);} .blk.loop{ background:var(--gold);} .blk.cond{ background:var(--pink); color:var(--outline);}
@@ -377,6 +377,30 @@
       <button class="btn" id="l-reset"><span data-ic="reset"></span> Reset</button>
       <button class="btn" id="l-hint"><span data-ic="spark"></span> Hint</button>
       <button class="btn" id="l-new"><span data-ic="grid"></span> New</button>
+    </div>
+  </section>
+
+  <!-- ============ JUNKYARD DASH SCREEN (infinite runner) ============ -->
+  <section id="dash-screen" class="screen">
+    <div class="topbar">
+      <button class="back" id="d-back"><span data-ic="back"></span> Map</button>
+      <div class="title">Junkyard Dash</div>
+    </div>
+    <div class="hud metal">
+      <div class="stat"><div class="i" data-ic="gem"></div><div class="v" id="d-gems">0</div><div class="l">Gems</div></div>
+      <div class="stat"><div class="i" data-ic="flag"></div><div class="v" id="d-dist">0%</div><div class="l">To Bridge</div></div>
+      <div class="stat"><div class="i" data-ic="bars"></div><div class="v" id="d-level">Lv 1</div><div class="l">Challenge</div></div>
+      <div class="stat"><div class="i" data-ic="crate"></div><div class="v" id="d-salvage">0</div><div class="l">Salvage</div></div>
+    </div>
+
+    <canvas id="d-board" width="480" height="480"></canvas>
+
+    <div class="hint-line">Tap the <b>top</b> to <b>jump</b> wrecks · hold the <b>bottom</b> to <b>duck</b> under pipes · scoop up gems &amp; power-ups!</div>
+
+    <div class="controls" style="margin-top:10px;">
+      <button class="btn" id="d-reset"><span data-ic="reset"></span> Restart</button>
+      <button class="btn" id="d-hint"><span data-ic="spark"></span> Auto-Run</button>
+      <button class="btn" id="d-new"><span data-ic="grid"></span> New Route</button>
     </div>
   </section>
 
@@ -595,7 +619,11 @@ const ICONS = {
   bridge:'<path d="M2 15c5-7 15-7 20 0" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M2 15v5M22 15v5M8 12.5v7.5M16 12.5v7.5M12 11v9" stroke="currentColor" stroke-width="1.7" fill="none"/>',
   sound:'<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 8.5a4.5 4.5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
   mute:'<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9l6 6M22 9l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>',
-  target:'<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.4" fill="currentColor"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4" stroke="currentColor" stroke-width="2"/>'
+  target:'<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.4" fill="currentColor"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4" stroke="currentColor" stroke-width="2"/>',
+  gem:'<path d="M6 3h12l3 5-9 13L3 8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M3 8h18M8 3l-2 5 6 13 6-13-2-5M9 8h6" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/>',
+  shield:'<path d="M12 2l8 3v6c0 5-3.4 8.4-8 11-4.6-2.6-8-6-8-11V5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  magnet:'<path d="M6 3h4v8a2 2 0 0 0 4 0V3h4v8a6 6 0 0 1-12 0z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M6 7h4M14 7h4" stroke="currentColor" stroke-width="1.8"/>',
+  run:'<circle cx="14" cy="4.5" r="2"/><path d="M13 8l-4 3 1 4 3-2M9 11l-3 1M11 15l-2 5M14 13l3 3-1 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
 };
 function icon(name, extra){ return '<svg class="ic-svg'+(extra?' '+extra:'')+'" viewBox="0 0 24 24" aria-hidden="true">'+(ICONS[name]||'')+'</svg>'; }
 function paintIcons(root){ (root||document).querySelectorAll('[data-ic]').forEach(el=>{ el.innerHTML=icon(el.dataset.ic); el.removeAttribute('data-ic'); }); }
@@ -792,9 +820,9 @@ const FEATS=[
   {id:'vault', title:'Crack the Vault', icon:'🔐', playable:true, reward:70,
    desc:'Use the clues to deduce the secret bunker code.',
    skill:'Deduction · Hypothesis Testing'},
-  {id:'bridge', title:'Rebuild the Bridge', icon:'🛠️', playable:true, reward:70,
-   desc:'Balance the counterweights to span the chasm and reach new lands.',
-   skill:'Balance Algebra · Unknowns'}
+  {id:'bridge', title:'Junkyard Dash', icon:'🏃', playable:true, reward:70,
+   desc:'Sprint across the junkyard — jump the wrecks, duck the pipes, grab gems and power-ups, reach the bridge!',
+   skill:'Reflexes · Timing & Spatial Focus'}
 ];
 
 // ---------- overworld map ----------
@@ -1021,7 +1049,7 @@ function buildOverworld(){
       else if(f.id==='beacon') startBeacon();
       else if(f.id==='well') startWell();
       else if(f.id==='vault') startVault();
-      else if(f.id==='bridge') startBridge();
+      else if(f.id==='bridge') startDash();
     });
   });
   // poke a goop-monster (or the boss) → squish sound + squash
@@ -1258,7 +1286,7 @@ $('hint-btn').onclick=()=>{
 };
 $('new-btn').onclick=()=>{ startGame(); };
 $('back-btn').onclick=()=>{ stopFlow(); show('map-screen'); renderMap(); };
-$('win-again').onclick=()=>{ $('win-overlay').classList.remove('show'); ({castle:startLaunch,beacon:startBeacon,well:startWell,vault:startVault,bridge:startBridge}[G.lastFeat]||startGame)(); };
+$('win-again').onclick=()=>{ $('win-overlay').classList.remove('show'); ({castle:startLaunch,beacon:startBeacon,well:startWell,vault:startVault,bridge:startDash}[G.lastFeat]||startGame)(); };
 $('win-map').onclick=()=>{ $('win-overlay').classList.remove('show'); show('map-screen'); renderMap(); };
 
 // ---------- add-to-home-screen hint ----------
@@ -2361,6 +2389,311 @@ $('l-hint').onclick =()=>{ if(LA.firing||LA.solved) return; const t=LA.world.tar
   const aim=findAim(LA.world,t); LA.hintUsed=true;
   if(aim){ fireLaunch(aim.vx,aim.vy); toast('Auto-aim — watch the arc!'); } else toast('Tricky one — try a high, loopy arc!'); };
 
+// =====================================================================
+//  FEAT 5 (replaces the balance-scale) — Junkyard Dash
+//  A Last-Kids obstacle-dash runner: auto-run, jump wrecks, duck pipes,
+//  grab gems + power-ups (magnet / shield / boost), reach the bridge.
+//  One deterministic fixed-step model drives play, autopilot, and the
+//  solvability check — every route is verified clearable before it's dealt.
+// =====================================================================
+const D_DT=1/120, D_GRAV=3.3, D_JUMP=1.42;
+const D_LOW_H=0.10, D_HIGH_GAP=0.085;
+const D_PH_STAND=0.14, D_PH_DUCK=0.06, D_PHW=0.03;
+const D_PX=0.22, D_GY=0.80;
+function D_SPD(level){ return 0.58 + (Math.max(1,Math.min(8,level))-1)*0.03; }
+
+function newDashState(){ return { x:0, hh:0, vy:0, grounded:true, ducking:false, gems:0, hits:0,
+  shield:false, magnetT:0, boostT:0, invT:0, stumble:0, verify:false,
+  struck:new Set(), collected:new Set(), puCollected:new Set(), reached:false, done:false, phase:0 }; }
+
+// One deterministic physics step — shared by live play, autopilot, and verify.
+function stepDash(st, w, act){
+  const spd = D_SPD(w.level) * (st.boostT>0?1.5:1);
+  st.x += spd*D_DT; st.phase += spd*D_DT;
+  if(act.jump && st.grounded){ st.vy=D_JUMP; st.grounded=false; }
+  if(!st.grounded){ st.hh += st.vy*D_DT; st.vy -= D_GRAV*D_DT; if(st.hh<=0){ st.hh=0; st.vy=0; st.grounded=true; } }
+  st.ducking = !!act.duck && st.grounded;
+  if(st.magnetT>0) st.magnetT-=D_DT;
+  if(st.boostT>0) st.boostT-=D_DT;
+  if(st.invT>0) st.invT-=D_DT;
+  if(st.stumble>0) st.stumble-=D_DT;
+  const ph = st.ducking?D_PH_DUCK:D_PH_STAND, head = st.hh + ph;
+  for(let i=0;i<w.obs.length;i++){ const o=w.obs[i]; if(st.struck.has(i)) continue;
+    if(o.x1 > st.x-D_PHW && o.x0 < st.x+D_PHW){
+      let hit=false;
+      if(o.type==='low'){ if(st.hh < o.h-0.004) hit=true; }
+      else { if(head > o.hb+0.004) hit=true; }
+      if(hit){ st.struck.add(i);
+        if(st.verify){ st.hits++; }
+        else if(st.boostT>0 || st.invT>0){ /* plow through */ }
+        else if(st.shield){ st.shield=false; st.invT=0.7; }
+        else { st.hits++; st.gems=Math.max(0,st.gems-3); st.invT=0.7; st.stumble=0.4; Sound.squish(0.7); }
+      }
+    } else if(o.x1 <= st.x-D_PHW){ st.struck.add(i); }
+  }
+  for(let i=0;i<w.gems.length;i++){ if(st.collected.has(i)) continue; const g=w.gems[i]; const dx=Math.abs(g.x-st.x);
+    if(st.magnetT>0 && dx<0.22){ st.collected.add(i); st.gems++; continue; }
+    if(dx<0.045){ const lo=st.hh-0.03, hi=st.hh+ph+0.03; if(g.hh>=lo && g.hh<=hi){ st.collected.add(i); st.gems++; } } }
+  if(!st.verify){ for(let i=0;i<w.pups.length;i++){ if(st.puCollected.has(i)) continue; const p=w.pups[i]; const dx=Math.abs(p.x-st.x);
+    if(dx<0.055){ const lo=st.hh-0.05, hi=st.hh+ph+0.05; if(p.hh>=lo && p.hh<=hi){ st.puCollected.add(i);
+      if(p.kind==='magnet') st.magnetT=6; else if(p.kind==='shield') st.shield=true; else { st.boostT=4; st.invT=Math.max(st.invT,4); } } } } }
+  if(st.x>=w.finishX){ st.reached=true; st.done=true; }
+}
+
+// Autopilot: jump the wrecks, duck the pipes. Also the solvability oracle.
+function dashAuto(st, w){
+  let next=null, nd=1e9;
+  for(let i=0;i<w.obs.length;i++){ const o=w.obs[i]; if(o.x1 <= st.x-D_PHW) continue; const d=o.x0-st.x; if(d<nd){ nd=d; next=o; } }
+  let jump=false, duck=false;
+  if(next){
+    if(next.type==='low'){ if(st.grounded && nd<0.30 && nd>-D_PHW) jump=true; }
+    else { if(nd<0.18 || (next.x0 < st.x+D_PHW && next.x1 > st.x-D_PHW)) duck=true; }
+  }
+  return {jump,duck};
+}
+function simulateDash(w){
+  const st=newDashState(); st.verify=true;
+  const maxSteps=Math.ceil((w.finishX+2)/(D_SPD(w.level)*D_DT))+300;
+  for(let s=0;s<maxSteps;s++){ stepDash(st, w, dashAuto(st,w)); if(st.reached) return {reached:true, forcedHits:st.hits, gems:st.gems, obs:w.obs.length}; }
+  return {reached:false, forcedHits:st.hits, gems:st.gems, obs:w.obs.length};
+}
+function buildDash(level){
+  const R=Math.random;
+  for(let attempt=0; attempt<140; attempt++){
+    const finishX = 8.5 + level*1.3;
+    const obs=[], gems=[], pups=[]; let x=3.2, prev=null;
+    const highRatio = 0.30 + Math.min(0.20,(level-1)*0.03);
+    while(x < finishX-1.6){
+      const t = R()<highRatio ? 'high' : 'low';
+      if(t==='low') obs.push({type:'low', x0:x, x1:x+0.07, h:D_LOW_H});
+      else          obs.push({type:'high', x0:x, x1:x+0.10, hb:D_HIGH_GAP});
+      let gap = (t==='low'?1.15:1.25) + R()*0.9 - (level-1)*0.03;
+      gap = Math.max(t==='low'?1.4:1.15, gap);
+      if(R()<0.72){ const gc=2+Math.floor(R()*3), gx0=x+0.5, arc=(t==='low' && R()<0.5);
+        for(let k=0;k<gc;k++){ const gx=gx0+k*0.14; if(gx<x+gap-0.22){
+          const hh=arc ? 0.17+Math.sin((gc>1?k/(gc-1):0.5)*Math.PI)*0.12 : 0.05;
+          gems.push({x:gx, hh}); } } }
+      x += gap; prev=t;
+    }
+    const npu = 1 + (level>=4?1:0), kinds=['magnet','shield','boost'];
+    for(let i=0;i<npu;i++) pups.push({ x:4 + R()*(finishX-6), hh:0.16, kind:kinds[Math.floor(R()*kinds.length)] });
+    const world={ level, finishX, obs, gems, pups };
+    const sim=simulateDash(world);
+    if(sim.reached && sim.forcedHits===0 && obs.length>=Math.max(3, Math.min(4,level+2))) return world;
+  }
+  // gentle fallback route
+  return { level, finishX:10,
+    obs:[{type:'low',x0:4.2,x1:4.27,h:D_LOW_H},{type:'high',x0:6.6,x1:6.7,hb:D_HIGH_GAP},{type:'low',x0:8.4,x1:8.47,h:D_LOW_H}],
+    gems:[{x:5,hh:0.05},{x:5.3,hh:0.05},{x:7.6,hh:0.05}], pups:[{x:5.8,hh:0.16,kind:'shield'}] };
+}
+
+// ---- controller ----
+const DA={ world:null, st:null, running:false, auto:false, finished:false,
+  jumpQueued:false, duckHeld:false, acc:0, lastT:0 };
+const dcanvas=$('d-board'), dctx=dcanvas.getContext('2d');
+let dPx=480, dAnimRAF=null;
+
+function startDash(){
+  G.lastFeat='bridge';
+  DA.world=buildDash(G.levels.bridge); DA.st=newDashState();
+  DA.running=true; DA.auto=false; DA.finished=false; DA.jumpQueued=false; DA.duckHeld=false; DA.acc=0;
+  DA.lastT=performance.now();
+  show('dash-screen'); fitDash(); updateDashHUD(); startDashAnim();
+}
+function fitDash(){
+  const size=Math.min(window.innerWidth-32,520), dpr=window.devicePixelRatio||1;
+  dPx=size; dcanvas.style.width=size+'px'; dcanvas.style.height=size+'px';
+  dcanvas.width=Math.round(size*dpr); dcanvas.height=Math.round(size*dpr);
+  dctx.setTransform(dpr,0,0,dpr,0,0);
+  if(DA.world) drawDash();
+}
+function startDashAnim(){ if(dAnimRAF) return; DA.lastT=performance.now();
+  const loop=(t)=>{ if(!$('dash-screen').classList.contains('active')){ dAnimRAF=null; return; }
+    let dt=(t-DA.lastT)/1000; DA.lastT=t; if(dt>0.05) dt=0.05;
+    if(DA.running && !DA.finished){ DA.acc+=dt; let steps=0;
+      while(DA.acc>=D_DT && steps<10){ DA.acc-=D_DT; steps++;
+        const act = DA.auto ? dashAuto(DA.st,DA.world) : {jump:DA.jumpQueued, duck:DA.duckHeld};
+        DA.jumpQueued=false; stepDash(DA.st,DA.world,act);
+        if(DA.st.reached) break; }
+      updateDashHUD();
+      if(DA.st.reached) winDash();
+    }
+    drawDash(); dAnimRAF=requestAnimationFrame(loop);
+  };
+  dAnimRAF=requestAnimationFrame(loop);
+}
+function stopDashAnim(){ if(dAnimRAF){ cancelAnimationFrame(dAnimRAF); dAnimRAF=null; } }
+function updateDashHUD(){ const st=DA.st, w=DA.world; if(!st||!w) return;
+  $('d-gems').textContent=st.gems;
+  $('d-dist').textContent=Math.min(100,Math.round(st.x/w.finishX*100))+'%';
+  $('d-level').textContent='Lv '+G.levels.bridge; $('d-salvage').textContent=G.salvage;
+}
+function winDash(){
+  if(DA.finished) return; DA.finished=true; DA.running=false;
+  const st=DA.st, w=DA.world;
+  const clean=st.hits===0, gotMost=st.gems>=Math.ceil(w.gems.length*0.7);
+  if(clean && gotMost && !DA.auto) G.levels.bridge=Math.min(8,G.levels.bridge+2);
+  else if(st.hits<=1 && !DA.auto) G.levels.bridge=Math.min(8,G.levels.bridge+1);
+  else if(DA.auto) G.levels.bridge=Math.max(1,G.levels.bridge-1);
+  const rew=claimFeat('bridge', FEATS[4].reward);
+  const bonus=st.gems; G.salvage+=bonus; saveProgress();
+  const gained=rew+bonus;
+  updateDashHUD(); Sound.win();
+  const allDone = Object.keys(G.claimed).length>=FEATS.length;
+  $('win-title').textContent = allDone ? 'BASE COMPLETE!' : 'You Made It!';
+  $('win-flag').innerHTML=icon('run');
+  $('win-msg').textContent = allDone
+    ? 'You dashed the whole junkyard and every hideout is cleared — the entire base is yours, hero!'
+    : 'You sprinted to the bridge — the way to new lands is open!';
+  $('win-reward').textContent='+'+gained+' salvage'+(bonus?'  ('+bonus+' from gems)':'');
+  setTimeout(()=>$('win-overlay').classList.add('show'), 450);
+}
+
+// ---- rendering ----
+function dnx(v){ return v*dPx; }
+function drawRunner(cx, feetY, ph, ducking, airborne, phase, alpha){
+  const S=dPx, h=ph*S, o='#160f22';
+  const skin='#f2c28b', jacket='#ff7a1a', pants='#2f6cff', cap='#e64d52', pack='#5fd43a';
+  dctx.save(); dctx.globalAlpha=alpha; dctx.lineJoin='round'; dctx.lineCap='round';
+  const lw=Math.max(2.4, h*0.075);
+  if(ducking){
+    const hipY=feetY-h*0.34;
+    dctx.strokeStyle=pants; dctx.lineWidth=lw*1.4;
+    dctx.beginPath(); dctx.moveTo(cx-h*0.04,hipY); dctx.lineTo(cx-h*0.5,feetY); dctx.moveTo(cx+h*0.14,hipY); dctx.lineTo(cx-h*0.12,feetY); dctx.stroke();
+    dctx.fillStyle=pack; dctx.strokeStyle=o; dctx.lineWidth=lw*0.55; rrectL(cx-h*0.62,hipY-h*0.30,h*0.22,h*0.3,h*0.06); dctx.fill(); dctx.stroke();
+    dctx.fillStyle=jacket; rrectL(cx-h*0.5, hipY-h*0.40, h*0.78, h*0.5, h*0.14); dctx.fill(); dctx.stroke();
+    const hx=cx+h*0.34, hy=hipY-h*0.34, hr=h*0.30;
+    dctx.fillStyle=skin; dctx.beginPath(); dctx.arc(hx,hy,hr,0,7); dctx.fill(); dctx.stroke();
+    dctx.fillStyle=cap; dctx.beginPath(); dctx.arc(hx,hy,hr,Math.PI*1.02,Math.PI*2.02); dctx.fill(); dctx.stroke();
+    dctx.beginPath(); dctx.moveTo(hx+hr*0.25,hy-hr*0.08); dctx.lineTo(hx+hr*1.7,hy); dctx.lineTo(hx+hr*1.25,hy+hr*0.28); dctx.closePath(); dctx.fill(); dctx.stroke();
+    dctx.fillStyle=o; dctx.beginPath(); dctx.arc(hx+hr*0.55,hy+hr*0.08,hr*0.17,0,7); dctx.fill();
+    dctx.restore(); return;
+  }
+  const hipY=feetY-h*0.40, shoulderY=feetY-h*0.80;
+  dctx.strokeStyle=pants; dctx.lineWidth=lw*1.3;
+  if(airborne){
+    dctx.beginPath(); dctx.moveTo(cx,hipY); dctx.lineTo(cx-h*0.22,feetY-h*0.14); dctx.moveTo(cx,hipY); dctx.lineTo(cx+h*0.26,feetY-h*0.02); dctx.stroke();
+  } else { const sw=Math.sin(phase*20);
+    dctx.beginPath(); dctx.moveTo(cx,hipY); dctx.lineTo(cx+sw*h*0.30, feetY); dctx.moveTo(cx,hipY); dctx.lineTo(cx-sw*h*0.30, feetY); dctx.stroke(); }
+  dctx.fillStyle=pack; dctx.strokeStyle=o; dctx.lineWidth=lw*0.55;
+  rrectL(cx-h*0.31, shoulderY+h*0.03, h*0.16, h*0.34, h*0.06); dctx.fill(); dctx.stroke();
+  dctx.fillStyle=jacket; rrectL(cx-h*0.17, shoulderY, h*0.34, h*0.44, h*0.11); dctx.fill(); dctx.stroke();
+  dctx.strokeStyle=jacket; dctx.lineWidth=lw*1.05;
+  const asw=airborne?-0.85:Math.sin(phase*20+Math.PI);
+  dctx.beginPath(); dctx.moveTo(cx+h*0.05,shoulderY+h*0.12); dctx.lineTo(cx+h*0.05+asw*h*0.22, shoulderY+h*0.36); dctx.stroke();
+  const hr=h*0.20, hy=shoulderY-hr*0.85, hx=cx+h*0.02;
+  dctx.fillStyle=skin; dctx.strokeStyle=o; dctx.lineWidth=lw*0.55;
+  dctx.beginPath(); dctx.arc(hx,hy,hr,0,7); dctx.fill(); dctx.stroke();
+  dctx.fillStyle=cap; dctx.beginPath(); dctx.arc(hx,hy,hr,Math.PI*1.02,Math.PI*2.02); dctx.fill(); dctx.stroke();
+  dctx.beginPath(); dctx.moveTo(hx+hr*0.2,hy-hr*0.08); dctx.lineTo(hx+hr*1.65,hy); dctx.lineTo(hx+hr*1.25,hy+hr*0.28); dctx.closePath(); dctx.fill(); dctx.stroke();
+  dctx.fillStyle=o; dctx.beginPath(); dctx.arc(hx+hr*0.45,hy+hr*0.05,hr*0.18,0,7); dctx.fill();
+  dctx.restore();
+}
+function drawDash(){
+  const w=DA.world, st=DA.st; if(!w||!st) return; const S=dPx, gy=dnx(D_GY);
+  dctx.clearRect(0,0,S,S);
+  // sky
+  const sky=dctx.createLinearGradient(0,0,0,S); sky.addColorStop(0,'#3a1f63'); sky.addColorStop(0.6,'#2a1650'); sky.addColorStop(1,'#1a1030');
+  dctx.fillStyle=sky; dctx.fillRect(0,0,S,gy);
+  // halftone dots
+  dctx.fillStyle='rgba(255,255,255,0.04)';
+  for(let yy=14; yy<gy; yy+=26){ for(let xx=((st.x*40)%26); xx<S; xx+=26){ dctx.beginPath(); dctx.arc(xx,yy,1.6,0,7); dctx.fill(); } }
+  // parallax junk skyline
+  dctx.fillStyle='#241041';
+  const off=(st.x*0.30*S)%(S*0.5);
+  for(let b=-1;b<4;b++){ const bx=b*S*0.5-off; const bh=S*(0.10+((b*37)%5)*0.012);
+    dctx.fillRect(bx, gy-bh, S*0.22, bh); dctx.fillRect(bx+S*0.26, gy-bh*0.7, S*0.14, bh*0.7); }
+  // ground
+  dctx.fillStyle='#2b3a24'; dctx.fillRect(0,gy,S,S-gy);
+  dctx.strokeStyle='#160f22'; dctx.lineWidth=4; dctx.beginPath(); dctx.moveTo(0,gy); dctx.lineTo(S,gy); dctx.stroke();
+  dctx.strokeStyle='#6b7a3a'; dctx.lineWidth=3; dctx.beginPath(); dctx.moveTo(0,gy+3); dctx.lineTo(S,gy+3); dctx.stroke();
+  dctx.strokeStyle='rgba(255,255,255,.06)'; dctx.lineWidth=2;
+  for(let xx=((-st.x*S)%40); xx<S; xx+=40){ dctx.beginPath(); dctx.moveTo(xx,gy+10); dctx.lineTo(xx+14,gy+10); dctx.stroke(); }
+  const toScreen=(wx)=> (D_PX + (wx - st.x))*S;
+  // finish (bridge to new lands)
+  const fsx=toScreen(w.finishX);
+  if(fsx < S+80){
+    dctx.strokeStyle='#25e3ff'; dctx.lineWidth=5; dctx.beginPath(); dctx.moveTo(fsx,gy); dctx.bezierCurveTo(fsx+S*0.10,gy-S*0.13, fsx+S*0.24,gy-S*0.13, fsx+S*0.34,gy); dctx.stroke();
+    dctx.strokeStyle='#160f22'; dctx.lineWidth=2; dctx.stroke();
+    for(let i=0;i<=6;i++){ const px=fsx+ (S*0.34)*i/6; dctx.strokeStyle='#160f22'; dctx.lineWidth=2; dctx.beginPath(); dctx.moveTo(px, gy); dctx.lineTo(px, gy-S*0.09*Math.sin(Math.PI*i/6)-2); dctx.stroke(); }
+    // checkered flag pole
+    dctx.strokeStyle='#fff7ea'; dctx.lineWidth=3; dctx.beginPath(); dctx.moveTo(fsx, gy); dctx.lineTo(fsx, gy-S*0.22); dctx.stroke();
+    for(let r=0;r<3;r++)for(let c=0;c<3;c++){ dctx.fillStyle=((r+c)%2)?'#160f22':'#fff7ea'; dctx.fillRect(fsx+c*8, gy-S*0.22+r*8, 8,8); }
+  }
+  // obstacles
+  for(const o of w.obs){ const sx=toScreen(o.x0), ex=toScreen(o.x1); if(ex<-40||sx>S+40) continue;
+    const wpx=Math.max(ex-sx, S*0.05);
+    if(o.type==='low'){ const hpx=dnx(o.h);
+      // wrecked car / junk pile
+      dctx.fillStyle='#7a6a52'; dctx.strokeStyle='#160f22'; dctx.lineWidth=3;
+      const bx=sx-wpx*0.4, bw=wpx*1.8, by=gy-hpx, bh=hpx;
+      rrectL(bx, by, bw, bh, 5); dctx.fill(); dctx.stroke();
+      dctx.fillStyle='#9c5a2b'; rrectL(bx+bw*0.12, by-bh*0.5, bw*0.55, bh*0.6, 5); dctx.fill(); dctx.stroke();
+      dctx.fillStyle='#3a3550'; for(const wx of [bx+bw*0.22, bx+bw*0.74]){ dctx.beginPath(); dctx.arc(wx, gy-2, bh*0.34, 0, 7); dctx.fill(); dctx.stroke(); }
+      dctx.fillStyle='rgba(255,210,30,.2)'; dctx.beginPath(); dctx.arc(bx+bw*0.4, by+bh*0.4, 3,0,7); dctx.fill();
+    } else {
+      // hanging hazard pipe from the ceiling down to hb
+      const bottom=gy-dnx(o.hb), bx=sx-wpx*0.25, bw=wpx*1.5;
+      dctx.fillStyle='#5a5a6e'; dctx.strokeStyle='#160f22'; dctx.lineWidth=3;
+      rrectL(bx, 0, bw, bottom, 6); dctx.fill(); dctx.stroke();
+      // hazard chevrons near the bottom
+      for(let i=0;i<3;i++){ dctx.fillStyle=(i%2)?'#ffd21e':'#160f22'; dctx.fillRect(bx, bottom-16-i*10, bw, 8); }
+      dctx.fillStyle='#8a8aa0'; rrectL(bx-3, bottom-8, bw+6, 12, 4); dctx.fill(); dctx.stroke();
+    }
+  }
+  // gems
+  for(let i=0;i<w.gems.length;i++){ if(st.collected.has(i)) continue; const g=w.gems[i]; const sx=toScreen(g.x); if(sx<-20||sx>S+20) continue;
+    const gyv=gy-dnx(g.hh), r=S*0.02, sh=Math.sin(st.phase*8+i)*0.5+0.5;
+    dctx.save(); dctx.translate(sx,gyv);
+    dctx.fillStyle='#25e3ff'; dctx.strokeStyle='#160f22'; dctx.lineWidth=2.4; dctx.shadowColor='rgba(37,227,255,'+(0.4+sh*0.4)+')'; dctx.shadowBlur=8;
+    dctx.beginPath(); dctx.moveTo(0,-r); dctx.lineTo(r*0.8,0); dctx.lineTo(0,r); dctx.lineTo(-r*0.8,0); dctx.closePath(); dctx.fill(); dctx.stroke();
+    dctx.shadowBlur=0; dctx.fillStyle='rgba(255,255,255,.7)'; dctx.beginPath(); dctx.moveTo(0,-r*0.6); dctx.lineTo(r*0.3,-r*0.1); dctx.lineTo(0,0); dctx.closePath(); dctx.fill();
+    dctx.restore(); }
+  // powerups
+  for(let i=0;i<w.pups.length;i++){ if(st.puCollected.has(i)) continue; const p=w.pups[i]; const sx=toScreen(p.x); if(sx<-24||sx>S+24) continue;
+    const pyv=gy-dnx(p.hh), r=S*0.03, bob=Math.sin(st.phase*6+i)*4;
+    const col=p.kind==='magnet'?'#ff3ea5':p.kind==='shield'?'#25e3ff':'#ffd21e';
+    dctx.save(); dctx.translate(sx,pyv+bob);
+    dctx.fillStyle=col; dctx.strokeStyle='#160f22'; dctx.lineWidth=3; dctx.shadowColor=col; dctx.shadowBlur=12;
+    dctx.beginPath(); dctx.arc(0,0,r,0,7); dctx.fill(); dctx.stroke(); dctx.shadowBlur=0;
+    dctx.fillStyle='#160f22'; dctx.save(); dctx.translate(-r*0.62,-r*0.62); dctx.scale(r*0.052, r*0.052);
+    const path=new Path2D(ICONS[p.kind==='boost'?'bolt':p.kind]); dctx.fill(path); dctx.restore();
+    dctx.restore(); }
+  // player
+  const cx=dnx(D_PX), ph=st.ducking?D_PH_DUCK:D_PH_STAND, feetY=gy-dnx(st.hh);
+  const flick=(st.invT>0 && !st.boostT) ? (Math.sin(st.phase*60)>0?0.4:1) : 1;
+  // boost trail
+  if(st.boostT>0){ for(let k=1;k<=4;k++){ dctx.globalAlpha=0.18*(5-k); dctx.fillStyle='#ffd21e'; dctx.beginPath(); dctx.ellipse(cx-k*10, feetY-dnx(ph)*0.5, 5,3,0,0,7); dctx.fill(); } dctx.globalAlpha=1; }
+  drawRunner(cx, feetY, ph, st.ducking, !st.grounded, st.phase, flick);
+  // shield bubble
+  if(st.shield){ dctx.strokeStyle='rgba(37,227,255,.8)'; dctx.lineWidth=3; dctx.beginPath(); dctx.arc(cx, feetY-dnx(ph)*0.5, dnx(ph)*0.72, 0, 7); dctx.stroke();
+    dctx.fillStyle='rgba(37,227,255,.10)'; dctx.fill(); }
+  // magnet aura
+  if(st.magnetT>0){ dctx.strokeStyle='rgba(255,62,165,.5)'; dctx.lineWidth=2; for(let k=1;k<=2;k++){ dctx.beginPath(); dctx.arc(cx, feetY-dnx(ph)*0.5, dnx(ph)*(0.8+k*0.25), -0.6, 0.6); dctx.stroke(); } }
+  // stumble flash
+  if(st.stumble>0){ dctx.fillStyle='rgba(255,60,60,'+Math.min(0.3,st.stumble)+')'; dctx.fillRect(0,0,S,gy); }
+  // start hint zones
+  if(st.x<1.4 && !DA.finished){ dctx.globalAlpha=0.5-st.x*0.3;
+    dctx.fillStyle='#7ee653'; dctx.font='800 '+Math.round(S*0.04)+'px system-ui'; dctx.textAlign='center';
+    dctx.fillText('▲ TAP TOP = JUMP', S*0.5, S*0.14);
+    dctx.fillText('▼ HOLD BOTTOM = DUCK', S*0.5, gy-8);
+    dctx.textAlign='left'; dctx.globalAlpha=1; }
+}
+
+$('d-back').onclick =()=>{ stopDashAnim(); show('map-screen'); renderMap(); };
+$('d-reset').onclick=()=>{ if(!DA.world) return; DA.st=newDashState(); DA.finished=false; DA.running=true; DA.auto=false; DA.jumpQueued=false; DA.duckHeld=false; DA.acc=0; DA.lastT=performance.now(); updateDashHUD(); };
+$('d-new').onclick  =()=>startDash();
+$('d-hint').onclick =()=>{ if(DA.finished) return; DA.auto=true; toast('Auto-Run — watch the moves!'); };
+dcanvas.addEventListener('pointerdown', e=>{ if(!DA.running||DA.finished) return; DA.auto=false;
+  const rect=dcanvas.getBoundingClientRect(), ny=(e.clientY-rect.top)/rect.height;
+  if(ny<0.5) DA.jumpQueued=true; else DA.duckHeld=true; });
+dcanvas.addEventListener('pointerup',   ()=>{ DA.duckHeld=false; });
+dcanvas.addEventListener('pointerleave',()=>{ DA.duckHeld=false; });
+window.addEventListener('keydown', e=>{ if(!$('dash-screen').classList.contains('active')) return;
+  if(e.code==='Space'||e.code==='ArrowUp'){ DA.auto=false; DA.jumpQueued=true; e.preventDefault(); }
+  else if(e.code==='ArrowDown'){ DA.auto=false; DA.duckHeld=true; e.preventDefault(); } });
+window.addEventListener('keyup', e=>{ if(e.code==='ArrowDown') DA.duckHeld=false; });
+
 // ---------- boot ----------
 // Small public namespace (also handy for automated testing).
 window.FOAS = { makePuzzle, buildCandidate, isSolved, optimalMoves, computePower, config,
@@ -2368,8 +2701,9 @@ window.FOAS = { makePuzzle, buildCandidate, isSolved, optimalMoves, computePower
                 buildWell, wellSolved, wellOptimal, wellConfig,
                 buildVault, vaultFeedback, vaultConfig,
                 buildBridge, bridgeLeft, bridgeRight, bridgeSolved,
-                buildLaunch, traceShot, launchReachAll, launchSolved, findAim };
-window.addEventListener('resize', ()=>{ fitCanvas(); fitBeacon(); fitWell(); fitBridge(); fitLaunch(); });
+                buildLaunch, traceShot, launchReachAll, launchSolved, findAim,
+                buildDash, simulateDash, stepDash, dashAuto, newDashState };
+window.addEventListener('resize', ()=>{ fitCanvas(); fitBeacon(); fitWell(); fitBridge(); fitLaunch(); fitDash(); });
 paintIcons();      // fill all static [data-ic] placeholders with vector icons
 Sound.load();
 (function(){ const mb=$('mute-btn');
