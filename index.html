@@ -46,6 +46,15 @@
   .wrap{ max-width:600px; margin:0 auto; padding:14px; }
   .screen{ display:none; } .screen.active{ display:block; animation:fade .3s ease; }
   @keyframes fade{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+  @keyframes goopwob{ 0%,100%{ transform:rotate(-4deg) } 50%{ transform:rotate(4deg) scaleY(1.05) } }
+  @keyframes herobob{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-3px) } }
+  @keyframes nodepulse{ 0%{ transform:scale(0.9); opacity:.55 } 100%{ transform:scale(1.35); opacity:0 } }
+  @keyframes roadflow{ to{ stroke-dashoffset:-40 } }
+  .goop{ transform-box:fill-box; transform-origin:center bottom; animation:goopwob 2.6s ease-in-out infinite; }
+  .goop.g1{ animation-duration:3.2s; animation-delay:.4s } .goop.g2{ animation-duration:2.1s; animation-delay:.8s }
+  .hero-av{ transform-box:fill-box; transform-origin:center bottom; animation:herobob 1.5s ease-in-out infinite; }
+  .node-ring{ transform-box:fill-box; transform-origin:center; animation:nodepulse 1.9s ease-out infinite; }
+  .road-flow{ animation:roadflow 1s linear infinite; }
 
   .ic-svg{ width:1em; height:1em; display:inline-block; vertical-align:-0.14em; fill:currentColor; }
 
@@ -723,8 +732,8 @@ const REGIONS = {
   vault:{  name:'Bunker Vault',    tint:'#b98bff' },
   bridge:{ name:'Junkyard Bridge', tint:'#ff7a1a' }
 };
-const NODEPOS = [ [262,84],[100,206],[252,326],[104,450],[250,568] ];
-const VW=360, VH=650;
+const NODEPOS = [ [258,96],[104,224],[256,352],[110,486],[250,616] ];
+const VW=360, VH=712;
 const EMBLEM = {
   castle: '<path d="M6 10a6 6 0 0 1 12 0 6 6 0 0 1-.7 2.8H6.7A6 6 0 0 1 6 10z"/><path d="M8 12h8v6H8z"/><path d="M7.4 12L12 8l4.6 4z"/><rect x="11" y="18" width="2" height="4"/>',
   beacon: '<path d="M9 21l1-11h4l1 11z"/><path d="M8 10h8l-2-5h-4z"/><rect x="10.6" y="12" width="2.8" height="3"/>',
@@ -756,63 +765,159 @@ function renderMap(){
   buildOverworld();
 }
 
+// ---- overworld sprites (comic Last-Kids map art) ----
+function ovShadow(x,y,rx){ return `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${(rx*0.32).toFixed(1)}" fill="#0b0512" opacity="0.35"/>`; }
+function spriteTree(x,y,s){ return `<g transform="translate(${x},${y}) scale(${s})">
+  <rect x="-3.5" y="-1" width="7" height="14" rx="2.5" fill="#6b431f" stroke="#160f22" stroke-width="2.5"/>
+  <circle cx="0" cy="-9" r="13" fill="#3fb96a" stroke="#160f22" stroke-width="3"/>
+  <circle cx="-7" cy="-5" r="8" fill="#57d07f" stroke="#160f22" stroke-width="2"/>
+  <circle cx="7" cy="-6" r="8" fill="#57d07f" stroke="#160f22" stroke-width="2"/></g>`; }
+function spriteBush(x,y,s){ return `<g transform="translate(${x},${y}) scale(${s})">
+  <path d="M-13 5 a7 7 0 0 1 9 -7 a7 7 0 0 1 13 1 a6 6 0 0 1 2 6 z" fill="#3fb96a" stroke="#160f22" stroke-width="2.5"/>
+  <circle cx="-3" cy="-1" r="2" fill="#7ee653"/></g>`; }
+function spriteGoo(x,y,s){ return `<g transform="translate(${x},${y}) scale(${s})">
+  <path d="M-20 2 C-22 -10 -6 -12 -3 -6 C1 -13 20 -11 18 2 C21 8 14 12 8 9 C6 15 2 15 0 9 C-2 15 -6 15 -9 9 C-15 12 -22 8 -20 2 Z" fill="#7ee653" stroke="#160f22" stroke-width="3"/>
+  <ellipse cx="-5" cy="-3" rx="5" ry="2" fill="#c6ff9a" opacity="0.7"/></g>`; }
+function spriteScrap(x,y,s){ return `<g transform="translate(${x},${y}) scale(${s})">
+  <rect x="-9" y="-6" width="12" height="10" rx="2" fill="#7a6a4a" stroke="#160f22" stroke-width="2.5" transform="rotate(-8)"/>
+  <circle cx="6" cy="3" r="5.5" fill="#26262f" stroke="#160f22" stroke-width="2.5"/>
+  <circle cx="6" cy="3" r="2" fill="#5a5a66"/></g>`; }
+function spriteMonster(x,y,s,i){
+  const cols=['#7ee653','#5fd43a','#a6ff7a','#63e0c2','#b98bff'], col=cols[i%cols.length];
+  return `<g transform="translate(${x},${y}) scale(${s})"><g class="goop g${i%3}">
+    ${ovShadow(0,17,15)}
+    <path d="M-18 3 C-18 -20 18 -20 18 3 C18 10 12 13 8 10 C6 17 2 17 0 10 C-2 17 -6 17 -8 10 C-12 13 -18 10 -18 3 Z" fill="${col}" stroke="#160f22" stroke-width="3"/>
+    <circle cx="-6" cy="-6" r="6.5" fill="#fff" stroke="#160f22" stroke-width="2"/>
+    <circle cx="8" cy="-7" r="5.5" fill="#fff" stroke="#160f22" stroke-width="2"/>
+    <circle cx="-5" cy="-4.5" r="2.8" fill="#160f22"/><circle cx="9" cy="-5.5" r="2.5" fill="#160f22"/>
+    <path d="M-5 3 q5 5 11 0" fill="none" stroke="#160f22" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M0 3 l-1.6 3.4 3.2 0 z" fill="#fff" stroke="#160f22" stroke-width="1"/>
+  </g></g>`; }
+function spriteHero(x,y){ return `<g transform="translate(${x},${y})"><g class="hero-av">
+  ${ovShadow(0,17,9)}
+  <rect x="-5.5" y="10" width="4.5" height="7" rx="1.5" fill="#2a2a44" stroke="#160f22" stroke-width="2"/>
+  <rect x="1" y="10" width="4.5" height="7" rx="1.5" fill="#2a2a44" stroke="#160f22" stroke-width="2"/>
+  <rect x="-7" y="0" width="14" height="12" rx="4" fill="#e64d52" stroke="#160f22" stroke-width="2.5"/>
+  <rect x="7" y="-7" width="3" height="17" rx="1.5" fill="#8a5a2b" stroke="#160f22" stroke-width="2" transform="rotate(18 8 2)"/>
+  <circle cx="0" cy="-6" r="7" fill="#f0c088" stroke="#160f22" stroke-width="2.5"/>
+  <path d="M-7 -8 l1.5 -6 2 5 2 -6 2 6 2 -5 1.5 6 z" fill="#3a2a1a" stroke="#160f22" stroke-width="1.5"/>
+  <circle cx="-2.5" cy="-6" r="1.1" fill="#160f22"/><circle cx="2.5" cy="-6" r="1.1" fill="#160f22"/>
+  <path d="M-2 -3 q2 1.6 4 0" fill="none" stroke="#160f22" stroke-width="1.4" stroke-linecap="round"/>
+</g></g>`; }
+function landmark(id){
+  if(id==='castle') return `<g stroke="#160f22">
+    <rect x="-5" y="2" width="10" height="18" rx="2" fill="#6b431f" stroke-width="3"/>
+    <circle cx="0" cy="-6" r="19" fill="#3fb96a" stroke-width="3.5"/>
+    <circle cx="-10" cy="-2" r="10" fill="#57d07f" stroke-width="2.5"/><circle cx="10" cy="-4" r="10" fill="#57d07f" stroke-width="2.5"/>
+    <rect x="-9" y="-13" width="18" height="13" rx="2" fill="#8a5a2b" stroke-width="3"/>
+    <path d="M-11 -13 L0 -23 L11 -13 Z" fill="#a06a34" stroke-width="3"/>
+    <rect x="-3" y="-8" width="6" height="8" fill="#160f22"/></g>`;
+  if(id==='beacon') return `<g stroke="#160f22" stroke-linecap="round">
+    <path d="M-11 20 L-4 -8 M11 20 L4 -8" fill="none" stroke="#8a5a2b" stroke-width="4"/>
+    <path d="M-8 8 L8 8 M-6 0 L6 0" fill="none" stroke="#8a5a2b" stroke-width="3"/>
+    <rect x="-11" y="-16" width="22" height="8" rx="2" fill="#8a5a2b" stroke-width="3"/>
+    <path d="M-13 -16 L0 -27 L13 -16 Z" fill="#c0392b" stroke-width="3"/>
+    <rect x="-0.8" y="-34" width="1.8" height="8" fill="#160f22"/><path d="M1 -34 l8 2 -8 2 z" fill="#ffd21e" stroke-width="1.5"/></g>`;
+  if(id==='well') return `<g stroke="#160f22">
+    <rect x="-22" y="-6" width="44" height="24" rx="3" fill="#9384a6" stroke-width="3.5"/>
+    <rect x="-22" y="-6" width="44" height="8" fill="#25e3ff" stroke-width="2"/>
+    <rect x="-6" y="6" width="12" height="12" fill="#3a2568" stroke-width="2"/>
+    <rect x="-18" y="5" width="7" height="7" fill="#b7d0e0" stroke-width="1.5"/><rect x="11" y="5" width="7" height="7" fill="#b7d0e0" stroke-width="1.5"/>
+    <path d="M-15 -6 q-2 12 3 18 M15 -6 q3 9 -2 15 M0 2 q-3 9 2 16" fill="none" stroke="#3fb96a" stroke-width="3" stroke-linecap="round"/></g>`;
+  if(id==='vault') return `<g stroke="#160f22">
+    <path d="M-18 14 A18 17 0 0 1 18 14 Z" fill="#6a6a7a" stroke-width="3.5"/>
+    <circle cx="0" cy="5" r="8.5" fill="#4a4a5a" stroke-width="3"/>
+    <path d="M0 -3 L0 13 M-8 5 L8 5 M-6 -1 L6 11 M6 -1 L-6 11" stroke-width="2" fill="none"/>
+    <circle cx="0" cy="5" r="2.5" fill="#160f22"/>
+    <circle cx="-13" cy="11" r="1.7" fill="#160f22"/><circle cx="13" cy="11" r="1.7" fill="#160f22"/></g>`;
+  if(id==='bridge') return `<g stroke="#160f22">
+    <path d="M-20 10 Q0 -12 20 10" stroke="#160f22" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M-20 10 Q0 -12 20 10" stroke="#8a5a2b" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M-13 4 l0 6 M-6 -1 l0 6 M1 -3 l0 6 M8 -1 l0 6 M14 4 l0 6" stroke-width="1.5" fill="none"/>
+    <rect x="-23" y="9" width="4" height="13" rx="1" fill="#6b431f" stroke-width="2"/><rect x="19" y="9" width="4" height="13" rx="1" fill="#6b431f" stroke-width="2"/></g>`;
+  return '';
+}
+
 function buildOverworld(){
   const p=[];
-  p.push('<svg viewBox="0 0 '+VW+' '+VH+'" xmlns="http://www.w3.org/2000/svg">');
-  p.push('<defs>');
-  p.push('<radialGradient id="pad" cx="36%" cy="26%" r="88%"><stop offset="0" stop-color="#5a3aa0"/><stop offset="1" stop-color="#241041"/></radialGradient>');
-  p.push('<radialGradient id="sky" cx="50%" cy="6%" r="100%"><stop offset="0" stop-color="#4a2585"/><stop offset=".55" stop-color="#2a1450"/><stop offset="1" stop-color="#160a2b"/></radialGradient>');
-  p.push('<filter id="glow" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="6"/></filter>');
-  p.push('</defs>');
-  p.push('<rect width="'+VW+'" height="'+VH+'" fill="url(#sky)"/>');
-
-  // halftone dot field
-  let dots='';
-  for(let gy=8; gy<VH; gy+=17){ for(let gx=((((gy/17)|0)%2)*8)+6; gx<VW; gx+=16){ dots+='<circle cx="'+gx+'" cy="'+gy+'" r="1.2" fill="#ffffff" opacity="0.05"/>'; } }
+  const rnd=(seed)=>{ const s=Math.sin(seed*997.13)*43758.5453; return s-Math.floor(s); };
+  p.push(`<svg viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg">`);
+  p.push(`<defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26402f"/><stop offset=".5" stop-color="#1d3025"/><stop offset="1" stop-color="#16241c"/></linearGradient>
+    <radialGradient id="nightglow" cx="50%" cy="3%" r="95%"><stop offset="0" stop-color="#4a2585" stop-opacity=".6"/><stop offset="1" stop-color="#4a2585" stop-opacity="0"/></radialGradient>
+    <filter id="glow" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="6"/></filter>
+  </defs>`);
+  p.push(`<rect width="${VW}" height="${VH}" fill="url(#ground)"/>`);
+  p.push(`<rect width="${VW}" height="${VH}" fill="url(#nightglow)"/>`);
+  // grass patches
+  let patches='';
+  for(let i=0;i<11;i++){ const x=(rnd(i+1)*VW).toFixed(0), y=(rnd(i+9)*VH).toFixed(0), r=(24+rnd(i+3)*30).toFixed(0);
+    patches+=`<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${(r*0.68).toFixed(0)}" fill="#2f5a3b" opacity="0.45"/>`; }
+  p.push(patches);
+  // halftone
+  let dots=''; for(let gy=8; gy<VH; gy+=18){ for(let gx=((((gy/18)|0)%2)*9)+6; gx<VW; gx+=18){ dots+=`<circle cx="${gx}" cy="${gy}" r="1.1" fill="#fff" opacity="0.04"/>`; } }
   p.push(dots);
+  // water / chasm at bottom (under the Bridge)
+  p.push(`<path d="M0 ${VH-72} Q ${VW/2} ${VH-112} ${VW} ${VH-72} L ${VW} ${VH} L 0 ${VH} Z" fill="#173a4a" stroke="#0f2733" stroke-width="3"/>`);
+  p.push(`<path d="M0 ${VH-70} Q ${VW/2} ${VH-110} ${VW} ${VH-70}" fill="none" stroke="#2b6f7a" stroke-width="2" opacity=".6"/>`);
 
-  // region auras
-  FEATS.forEach((f,i)=>{ const [x,y]=NODEPOS[i], tint=REGIONS[f.id].tint;
-    p.push('<circle cx="'+x+'" cy="'+y+'" r="80" fill="'+tint+'" opacity="'+(nodeUnlocked(i)?0.15:0.06)+'"/>'); });
-
-  // zip-line / spray-paint trails
+  // roads
   for(let i=0;i<FEATS.length-1;i++){
     const [x0,y0]=NODEPOS[i], [x1,y1]=NODEPOS[i+1], my=(y0+y1)/2;
-    const d='M'+x0+' '+y0+' C '+x0+' '+my+' '+x1+' '+my+' '+x1+' '+y1;
-    p.push('<path d="'+d+'" fill="none" stroke="#160f22" stroke-width="12" stroke-linecap="round"/>'); // ink
-    if(nodeUnlocked(i+1)){
-      p.push('<path d="'+d+'" fill="none" stroke="#ffd21e" stroke-width="6" stroke-linecap="round"/>');
-      p.push('<path d="'+d+'" fill="none" stroke="#25e3ff" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 12" class="conduit-active" style="filter:drop-shadow(0 0 4px rgba(37,227,255,.9))"/>');
-    } else {
-      p.push('<path d="'+d+'" fill="none" stroke="#3a2a55" stroke-width="5" stroke-linecap="round"/>');
-      p.push('<path d="'+d+'" fill="none" stroke="#57c531" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 15" opacity="0.55"/>'); // slime drip
-    }
+    const d=`M${x0} ${y0} C ${x0} ${my} ${x1} ${my} ${x1} ${y1}`;
+    p.push(`<path d="${d}" fill="none" stroke="#160f22" stroke-width="20" stroke-linecap="round"/>`);
+    p.push(`<path d="${d}" fill="none" stroke="#4a4458" stroke-width="15" stroke-linecap="round"/>`);
+    if(nodeUnlocked(i+1)) p.push(`<path d="${d}" fill="none" stroke="#ffd21e" stroke-width="2.5" stroke-dasharray="9 11" class="road-flow"/>`);
+    else p.push(`<path d="${d}" fill="none" stroke="#7ee653" stroke-width="10" stroke-linecap="round" opacity="0.5" stroke-dasharray="2 14"/>`);
   }
 
-  // stronghold nodes
+  // scenery
+  p.push([spriteTree(38,150,1.1),spriteTree(322,170,1.0),spriteBush(58,300,1.2),spriteTree(305,440,1.15),
+    spriteBush(300,300,1.1),spriteScrap(48,470,1.1),spriteBush(196,150,1.0),spriteScrap(316,560,1.0),
+    spriteGoo(184,250,1.1),spriteGoo(58,560,1.2),spriteBush(160,470,1.0),spriteTree(64,650,1.0),spriteBush(310,660,1.0)].join(''));
+
+  // goop monsters — a few scattered, more guarding locked hideouts
+  let mi=0; const mon=[];
+  mon.push(spriteMonster(150,180,0.85,mi++), spriteMonster(212,548,0.95,mi++), spriteMonster(44,388,0.8,mi++));
+  FEATS.forEach((f,i)=>{ if(!nodeUnlocked(i)){ const [x,y]=NODEPOS[i];
+    mon.push(spriteMonster(x-44,y+8,0.82,mi++)); if(i%2===0) mon.push(spriteMonster(x+42,y-6,0.7,mi++)); } });
+  p.push(mon.join(''));
+
+  // landmark nodes
   FEATS.forEach((f,i)=>{
     const [x,y]=NODEPOS[i];
-    const claimedThis=!!G.claimed[f.id], open=nodeUnlocked(i), R=32;
+    const claimedThis=!!G.claimed[f.id], open=nodeUnlocked(i);
     const ring = claimedThis?'#ffd21e':(open?'#25e3ff':'#6a5a8a');
-    const emCol= claimedThis?'#fff2b0':(open?'#eafcff':'#b7a6d6');
-    let g='<g class="feat'+(open?'':' locked')+'" data-idx="'+i+'" transform="translate('+x+','+y+')">';
-    g+='<circle r="46" fill="transparent"/>';
-    if(open) g+='<circle r="'+(R+10)+'" fill="'+ring+'" opacity="0.22" filter="url(#glow)"/>';
-    g+='<circle cx="3" cy="5" r="'+R+'" fill="#160f22"/>';                          // hard ink shadow
-    g+='<circle r="'+R+'" fill="url(#pad)" stroke="#160f22" stroke-width="4"/>';    // sticker face + ink keyline
-    g+='<circle r="'+(R-4)+'" fill="none" stroke="'+ring+'" stroke-width="3"/>';    // neon ring
-    g+='<g transform="translate(-13.2,-13.2) scale(1.1)" fill="'+emCol+'" style="color:'+emCol+'">'+(open?EMBLEM[f.id]:ICONS.lock)+'</g>';
-    if(!open){ g+='<g fill="#57c531"><path d="M-10 '+(-R+2)+' q3 17 6 0 z"/><path d="M12 '+(-R+8)+' q2.5 13 5 0 z"/></g>'; } // monster goo drips
-    if(claimedThis) g+='<g transform="translate('+(R-6)+',-'+(R-6)+')"><circle r="11" fill="#ffd21e" stroke="#160f22" stroke-width="3"/><g transform="translate(-6.6,-6.6) scale(0.55)" fill="#160f22" style="color:#160f22">'+ICONS.check+'</g></g>';
-    g+='<text class="node-label" x="0" y="'+(R+21)+'" text-anchor="middle" font-size="14" fill="#fff7ea" stroke="#160f22" stroke-width="3" paint-order="stroke" style="font-weight:900;">'+REGIONS[f.id].name+'</text>';
+    let g=`<g class="feat${open?'':' locked'}" data-idx="${i}" transform="translate(${x},${y})">`;
+    g+=`<rect x="-48" y="-46" width="96" height="118" fill="transparent"/>`;
+    g+=`<ellipse cx="0" cy="24" rx="34" ry="11" fill="#0b0512" opacity="0.4"/>`;
+    g+=`<ellipse cx="0" cy="22" rx="32" ry="10" fill="#3a3550" stroke="#160f22" stroke-width="3"/>`;
+    if(open && !claimedThis) g+=`<circle class="node-ring" cx="0" cy="6" r="30" fill="none" stroke="${ring}" stroke-width="3"/>`;
+    if(open) g+=`<circle cx="0" cy="4" r="30" fill="${ring}" opacity="0.15" filter="url(#glow)"/>`;
+    g+=`<g transform="translate(0,4)"${open?'':' opacity="0.45"'}>${landmark(f.id)}</g>`;
+    if(!open){
+      g+=spriteGoo(0,12,1.15);
+      g+=`<g transform="translate(0,2)"><circle r="13" fill="#241041" stroke="#160f22" stroke-width="3"/><g transform="translate(-8,-8) scale(0.66)" fill="#b7a6d6" style="color:#b7a6d6">${ICONS.lock}</g></g>`;
+    }
+    if(claimedThis){
+      g+=`<g transform="translate(0,-30)"><rect x="-1" y="-14" width="2.4" height="16" fill="#160f22"/><path d="M1.4 -14 l12 3 -12 3 z" fill="#ffd21e" stroke="#160f22" stroke-width="2"/></g>`;
+      g+=`<g transform="translate(24,-16)"><circle r="10" fill="#ffd21e" stroke="#160f22" stroke-width="3"/><g transform="translate(-6,-6) scale(0.5)" fill="#160f22" style="color:#160f22">${ICONS.check}</g></g>`;
+    }
+    g+=`<text class="node-label" x="0" y="46" text-anchor="middle" font-size="14" fill="#fff7ea" stroke="#160f22" stroke-width="3.5" paint-order="stroke" style="font-weight:900;">${REGIONS[f.id].name}</text>`;
     const sub = claimedThis?'CLEARED!':(open?('+'+f.reward+' SCRAP'):'GOO-LOCKED');
     const subcol = claimedThis?'#ffd21e':(open?'#25e3ff':'#8bff5a');
-    g+='<text x="0" y="'+(R+35)+'" text-anchor="middle" font-size="10" font-weight="800" letter-spacing=".4" fill="'+subcol+'" stroke="#160f22" stroke-width="2" paint-order="stroke">'+sub+'</text>';
+    g+=`<text x="0" y="61" text-anchor="middle" font-size="10" font-weight="800" letter-spacing=".4" fill="${subcol}" stroke="#160f22" stroke-width="2.5" paint-order="stroke">${sub}</text>`;
     g+='</g>';
     p.push(g);
   });
-  p.push('</svg>');
 
+  // hero avatar at the current objective
+  let obj=FEATS.findIndex((f,i)=>nodeUnlocked(i) && !G.claimed[f.id]);
+  if(obj<0) obj=FEATS.length-1;
+  const [hx,hy]=NODEPOS[obj];
+  p.push(spriteHero(hx-40, hy+4));
+
+  p.push('</svg>');
   const ow=$('overworld'); ow.innerHTML=p.join('');
   ow.querySelectorAll('.feat').forEach(gEl=>{
     const idx=+gEl.getAttribute('data-idx'), f=FEATS[idx];

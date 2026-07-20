@@ -12,9 +12,11 @@ world-map, salvage, and per-Feat adaptive difficulty tying it together.
 middle-grade graphic-novel look (think *Last Kids on Earth*): bold ink outlines,
 halftone dot shading, hard offset shadows, and a punchy slime-green / neon-cyan /
 cosmic-violet / hazard-yellow palette. The home screen is a comic **Overworld** —
-kid strongholds (Treehouse HQ, Lookout Tower, Overgrown Mall, Bunker Vault,
-Junkyard Bridge) strung along glowing zip-lines; locked spots are shrouded in
-monster goo. Buttons are chunky arcade/duct-tape keycaps, headings are
+an illustrated top-down neighbourhood map with a winding road linking hand-drawn
+landmark buildings (Treehouse HQ, Lookout Tower, Overgrown Mall, Bunker Vault,
+Junkyard Bridge), a little hero avatar standing at your current objective, and
+wobbling googly goop-monsters scattered around — extra ones guarding the
+still-goo-locked hideouts. Buttons are chunky arcade/duct-tape keycaps, headings are
 hand-lettered with ink strokes, and all icons are custom vector art (no emoji).
 Fully self-contained (no external fonts) so it works offline. Tuned for high
 readability for ages 8–12.
