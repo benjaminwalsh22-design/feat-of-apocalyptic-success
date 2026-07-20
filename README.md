@@ -2,10 +2,10 @@
 
 An installable web game for an advanced young learner. Rebuild a ruined world
 one **Feat** at a time by solving logic puzzles that stretch spatial reasoning
-and planning — wrapped in a bold "explorer at dusk" adventure. This build has **three** fully playable Feats — **"Claim the Castle"**
-(power-routing), **"Light the Beacon"** (block coding), and **"Purify the Well"**
-(fractions & ratios) — plus the world-map, salvage, and adaptive-difficulty shell
-the remaining Feats will slot into.
+and planning — wrapped in a bold "explorer at dusk" adventure. This build has **four** fully playable Feats — **"Claim the Castle"**
+(power-routing), **"Light the Beacon"** (block coding), **"Purify the Well"**
+(fractions & ratios), and **"Crack the Vault"** (deduction / code-breaking) — plus
+the world-map, salvage, and adaptive-difficulty shell the last Feat will slot into.
 
 **Art direction — comic-book "kid-built fort vs. goop-monsters."** A high-energy
 middle-grade graphic-novel look (think *Last Kids on Earth*): bold ink outlines,
@@ -87,6 +87,12 @@ a target **fraction** ("fill the vat to 3/4") or **ratio** ("3 parts Purifier to
 1 part Spring Water — make 8 units"). A live readout shows the current mix
 *reduced to lowest terms*, so she practices equivalent fractions and scaling a
 ratio to a total. Correct mix → the spring runs clean.
+
+**Crack the Vault** — A Mastermind-style deduction puzzle. Guess the secret
+symbol code; after each try, feedback pips tell her how close she is (**green** =
+right symbol in the right slot, **yellow** = right symbol in the wrong slot), and
+she narrows it down by logic. Symbols are double-encoded by colour *and* shape, so
+it's colourblind-friendly. Crack it to swing the bunker doors open.
 
 All Feats have no lives, no timers, and no way to lose, and each has its own
 adaptive challenge level that rises automatically the faster and cleaner she

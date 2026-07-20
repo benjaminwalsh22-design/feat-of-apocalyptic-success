@@ -201,6 +201,25 @@
   .wbtn .ic-svg{ font-size:20px; color:var(--cyan); }
   .wbtn:active{ transform:translateY(2px); box-shadow:inset 0 2px 0 rgba(255,255,255,.2), 0 1px 0 var(--metal-lo); }
 
+  /* vault (deduction) */
+  .v-legend{ display:flex; gap:6px; justify-content:center; align-items:center; flex-wrap:wrap; font-size:12px; color:var(--muted); font-weight:800; margin:6px 0 8px; }
+  .vchip{ width:38px; height:38px; border-radius:10px; border:3px solid var(--outline); box-shadow:0 3px 0 var(--outline); display:grid; place-items:center; }
+  .vchip .ic-svg{ width:22px; height:22px; color:var(--outline); }
+  .vchip.sm{ width:30px; height:30px; border-width:2px; box-shadow:0 2px 0 var(--outline); }
+  .vchip.sm .ic-svg{ width:17px; height:17px; }
+  .vslot{ width:44px; height:44px; border-radius:12px; border:3px dashed var(--outline); background:rgba(20,10,32,.5);
+    display:grid; place-items:center; font-weight:900; color:var(--muted); font-size:20px; cursor:pointer; }
+  .v-current{ display:flex; gap:10px; justify-content:center; align-items:center; margin:10px 0 6px; flex-wrap:wrap; }
+  .v-current .vchip{ cursor:pointer; }
+  .v-history{ max-height:210px; overflow-y:auto; display:flex; flex-direction:column-reverse; gap:8px; padding:8px;
+    border:3px solid var(--outline); border-radius:14px; background:rgba(20,10,32,.45); box-shadow:inset 0 0 18px rgba(0,0,0,.4); }
+  .v-history:empty{ display:none; }
+  .vrow{ display:flex; align-items:center; gap:8px; justify-content:center; }
+  .vrow .num{ width:18px; text-align:right; color:var(--muted); font-weight:800; font-size:12px; }
+  .pips{ display:flex; flex-wrap:wrap; width:34px; gap:3px; }
+  .pip{ width:11px; height:11px; border-radius:50%; border:2px solid var(--outline); }
+  .pip.exact{ background:var(--moss); } .pip.partial{ background:var(--gold); } .pip.none{ background:#2a1a4e; }
+
   /* add-to-home hint */
   #a2hs{ display:none; position:fixed; left:12px; right:12px; bottom:12px; z-index:60; align-items:center; gap:10px;
     padding:12px 14px; border-radius:14px; font-size:13px; color:#dff2ef;
@@ -371,6 +390,33 @@
       <button class="btn" id="w-reset"><span data-ic="reset"></span> Reset</button>
       <button class="btn" id="w-hint"><span data-ic="spark"></span> Hint</button>
       <button class="btn" id="w-new"><span data-ic="grid"></span> New</button>
+    </div>
+  </section>
+
+  <!-- ============ VAULT SCREEN (deduction) ============ -->
+  <section id="vault-screen" class="screen">
+    <div class="topbar">
+      <button class="back" id="v-back"><span data-ic="back"></span> Map</button>
+      <div class="title">Bunker Vault</div>
+    </div>
+    <div class="hud metal">
+      <div class="stat"><div class="i" data-ic="lock"></div><div class="v" id="v-len">0</div><div class="l">Slots</div></div>
+      <div class="stat"><div class="i" data-ic="cursor"></div><div class="v" id="v-tries">0</div><div class="l">Tries</div></div>
+      <div class="stat"><div class="i" data-ic="bars"></div><div class="v" id="v-level">Lv 1</div><div class="l">Challenge</div></div>
+      <div class="stat"><div class="i" data-ic="crate"></div><div class="v" id="v-salvage">0</div><div class="l">Salvage</div></div>
+    </div>
+
+    <div class="hint-line">Crack the monster-vault code! <b style="color:var(--moss)">Green pip</b> = right symbol, right slot. <b style="color:var(--gold)">Yellow pip</b> = right symbol, wrong slot.</div>
+
+    <div class="v-legend" id="v-legend"></div>
+    <div class="v-history" id="v-history"></div>
+    <div class="v-current" id="v-current"></div>
+
+    <button class="btn primary" id="v-test" style="width:100%; margin-top:4px;"><span data-ic="lock"></span> Test Code</button>
+    <div class="controls" style="margin-top:10px;">
+      <button class="btn" id="v-reset"><span data-ic="reset"></span> Clear</button>
+      <button class="btn" id="v-hint"><span data-ic="spark"></span> Hint</button>
+      <button class="btn" id="v-new"><span data-ic="grid"></span> New</button>
     </div>
   </section>
 </div>
@@ -583,7 +629,7 @@ const FLAG_COST = 40;
 
 const G = {
   salvage:0,
-  levels:{ castle:1, beacon:1, well:1 },   // adaptive difficulty per feat
+  levels:{ castle:1, beacon:1, well:1, vault:1 },   // adaptive difficulty per feat
   claimed:{},                       // { castle:true, beacon:true, ... }
   unlockedFlags:[0], selFlag:0,
   lastFeat:'castle',
@@ -595,9 +641,9 @@ function loadProgress(){
   G.salvage = s.salvage||0;
   // per-feat levels (migrate from an older single-level save)
   if(s.levels && typeof s.levels==='object'){
-    G.levels = { castle:s.levels.castle||1, beacon:s.levels.beacon||1, well:s.levels.well||1 };
+    G.levels = { castle:s.levels.castle||1, beacon:s.levels.beacon||1, well:s.levels.well||1, vault:s.levels.vault||1 };
   } else {
-    G.levels = { castle:s.level||1, beacon:1, well:1 };
+    G.levels = { castle:s.level||1, beacon:1, well:1, vault:1 };
   }
   // claimed set (migrate from an older boolean save)
   if(s.claimed && typeof s.claimed==='object') G.claimed = {...s.claimed};
@@ -635,7 +681,7 @@ const FEATS=[
   {id:'well', title:'Purify the Well', icon:'💧', playable:true, reward:60,
    desc:'Mix the cleansing formula in exactly the right proportions.',
    skill:'Fractions & Ratios'},
-  {id:'vault', title:'Crack the Vault', icon:'🔐', playable:false, reward:70,
+  {id:'vault', title:'Crack the Vault', icon:'🔐', playable:true, reward:70,
    desc:'Use the clues to deduce the secret bunker code.',
    skill:'Deduction · Hypothesis Testing'},
   {id:'bridge', title:'Rebuild the Bridge', icon:'🛠️', playable:false, reward:70,
@@ -749,7 +795,8 @@ function buildOverworld(){
       if(f.id==='castle') startGame();
       else if(f.id==='beacon') startBeacon();
       else if(f.id==='well') startWell();
-      else alert(REGIONS[f.id].name+'\n\nThis outpost comes online in a future update. Keep reclaiming to power the conduit onward!');
+      else if(f.id==='vault') startVault();
+      else alert(REGIONS[f.id].name+'\n\nThis hideout is still crawling with goo — coming in a future update. Keep clearing to zip onward!');
     });
   });
 }
@@ -977,7 +1024,7 @@ $('hint-btn').onclick=()=>{
 };
 $('new-btn').onclick=()=>{ startGame(); };
 $('back-btn').onclick=()=>{ stopFlow(); show('map-screen'); renderMap(); };
-$('win-again').onclick=()=>{ $('win-overlay').classList.remove('show'); ({castle:startGame,beacon:startBeacon,well:startWell}[G.lastFeat]||startGame)(); };
+$('win-again').onclick=()=>{ $('win-overlay').classList.remove('show'); ({castle:startGame,beacon:startBeacon,well:startWell,vault:startVault}[G.lastFeat]||startGame)(); };
 $('win-map').onclick=()=>{ $('win-overlay').classList.remove('show'); show('map-screen'); renderMap(); };
 
 // ---------- add-to-home-screen hint ----------
@@ -1532,11 +1579,135 @@ $('w-hint').onclick =()=>{ if(W.solvedNow) return; const t=W.board.tanks.find(t=
 $('w-new').onclick  =()=>{ startWell(); };
 $('w-back').onclick =()=>{ stopWellAnim(); show('map-screen'); renderMap(); };
 
+// =====================================================================
+//  FEAT 4 — Crack the Vault (deduction / code-breaking)
+// =====================================================================
+const VAULT_SYMBOLS=[
+  {col:'#8bff5a', icon:'circle'},
+  {col:'#25e3ff', icon:'triangle'},
+  {col:'#ffd21e', icon:'square'},
+  {col:'#ff7a1a', icon:'star'},
+  {col:'#ff3ea5', icon:'diamond'},
+  {col:'#b98bff', icon:'boltc'}
+];
+const VSHAPE={
+  circle:'<circle cx="12" cy="12" r="7"/>',
+  triangle:'<path d="M12 4 20 19 4 19z"/>',
+  square:'<rect x="5" y="5" width="14" height="14" rx="2.5"/>',
+  star:'<path d="M12 3l2.6 6H21l-5 4 1.9 7-5.9-4-5.9 4 1.9-7-5-4h6.4z"/>',
+  diamond:'<path d="M12 3l8 9-8 9-8-9z"/>',
+  boltc:'<path d="M13 3 6 13h4l-1 8 8-11h-4l2-7z"/>'
+};
+function vIcon(sym, small){ const s=VAULT_SYMBOLS[sym];
+  return '<span class="vchip'+(small?' sm':'')+'" style="background:'+s.col+'"><svg class="ic-svg" viewBox="0 0 24 24">'+VSHAPE[s.icon]+'</svg></span>'; }
+
+function vaultConfig(level){
+  const T={1:[2,3,false],2:[3,4,false],3:[3,5,false],4:[4,5,false],5:[4,6,false],6:[4,6,true],7:[5,6,false],8:[5,6,true]};
+  const [length,colors,allowDup]=T[Math.max(1,Math.min(8,level))]; return {length,colors,allowDup};
+}
+function buildVault(level){
+  const {length,colors,allowDup}=vaultConfig(level);
+  const code=[];
+  if(allowDup){ for(let i=0;i<length;i++) code.push(rint(colors)); }
+  else { const pool=[]; for(let i=0;i<colors;i++) pool.push(i); shuffle(pool); for(let i=0;i<length;i++) code.push(pool[i]); }
+  return { level, length, colors, allowDup, code, guesses:[] };
+}
+function vaultFeedback(guess, code){
+  const L=code.length; let exact=0; const cc={}, gc={};
+  for(let i=0;i<L;i++){
+    if(guess[i]===code[i]) exact++;
+    else { cc[code[i]]=(cc[code[i]]||0)+1; gc[guess[i]]=(gc[guess[i]]||0)+1; }
+  }
+  let partial=0; for(const s in cc) partial+=Math.min(cc[s], gc[s]||0);
+  return { exact, partial };
+}
+
+// ---- controller ----
+const V={ board:null, cur:[], tries:0, hintUsed:false, solvedNow:false, startTime:0 };
+function startVault(){
+  G.lastFeat='vault';
+  V.board=buildVault(G.levels.vault);
+  V.cur=new Array(V.board.length).fill(-1);
+  V.tries=0; V.hintUsed=false; V.solvedNow=false; V.startTime=Date.now();
+  show('vault-screen'); renderVLegend(); renderVHistory(); renderVCurrent(); updateVaultHUD();
+}
+function updateVaultHUD(){
+  $('v-len').textContent=V.board.length; $('v-tries').textContent=V.tries;
+  $('v-level').textContent='Lv '+G.levels.vault; $('v-salvage').textContent=G.salvage;
+}
+function renderVLegend(){
+  let h='<span>Symbols:</span>'; for(let i=0;i<V.board.colors;i++) h+=vIcon(i,true);
+  $('v-legend').innerHTML=h;
+}
+function renderVHistory(){
+  const el=$('v-history'); el.innerHTML='';
+  V.board.guesses.forEach((g,idx)=>{
+    let chips=''; g.guess.forEach(s=>chips+=vIcon(s,true));
+    const none=V.board.length-g.exact-g.partial; let pips='';
+    for(let i=0;i<g.exact;i++)  pips+='<span class="pip exact"></span>';
+    for(let i=0;i<g.partial;i++) pips+='<span class="pip partial"></span>';
+    for(let i=0;i<none;i++)      pips+='<span class="pip none"></span>';
+    const row=document.createElement('div'); row.className='vrow';
+    row.innerHTML='<span class="num">'+(idx+1)+'</span>'+chips+'<span class="pips">'+pips+'</span>';
+    el.appendChild(row);
+  });
+}
+function renderVCurrent(){
+  const el=$('v-current'); el.innerHTML='';
+  for(let i=0;i<V.board.length;i++){
+    if(V.cur[i]<0){
+      const slot=document.createElement('div'); slot.className='vslot'; slot.textContent='?';
+      slot.onclick=()=>cycleSlot(i); el.appendChild(slot);
+    } else {
+      const w=document.createElement('div'); w.innerHTML=vIcon(V.cur[i]); const chip=w.firstChild;
+      chip.onclick=()=>cycleSlot(i); el.appendChild(chip);
+    }
+  }
+}
+function cycleSlot(i){ if(V.solvedNow) return; V.cur[i]=(V.cur[i]+1)%V.board.colors; renderVCurrent(); }
+function vTest(){
+  if(V.solvedNow) return;
+  if(V.cur.some(s=>s<0)){ toast('Fill every slot first!'); return; }
+  const fb=vaultFeedback(V.cur, V.board.code);
+  V.board.guesses.push({ guess:V.cur.slice(), exact:fb.exact, partial:fb.partial });
+  V.tries++; renderVHistory(); updateVaultHUD();
+  if(fb.exact===V.board.length){ winVault(); }
+  else { V.cur=new Array(V.board.length).fill(-1); renderVCurrent(); }
+}
+function vHint(){
+  if(V.solvedNow) return;
+  let idx=-1; for(let i=0;i<V.board.length;i++){ if(V.cur[i]!==V.board.code[i]){ idx=i; break; } }
+  V.hintUsed=true;
+  if(idx<0){ toast('That guess looks right — hit Test Code!'); return; }
+  V.cur[idx]=V.board.code[idx]; renderVCurrent(); toast('Revealed slot '+(idx+1)+'!');
+}
+function winVault(){
+  if(V.solvedNow) return; V.solvedNow=true;
+  const secs=(Date.now()-V.startTime)/1000, par=V.board.length+Math.ceil(V.board.colors/2);
+  const fast=secs<150, eff=V.tries<=par;
+  if(fast&&eff&&!V.hintUsed) G.levels.vault=Math.min(8,G.levels.vault+2);
+  else if(eff&&!V.hintUsed) G.levels.vault=Math.min(8,G.levels.vault+1);
+  else if(V.hintUsed) G.levels.vault=Math.max(1,G.levels.vault-1);
+  const gained=claimFeat('vault', FEATS[3].reward);
+  updateVaultHUD();
+  $('win-title').textContent='Vault Cracked!';
+  $('win-flag').innerHTML=icon('lock');
+  $('win-msg').textContent='The bunker doors clunk open — you cracked it in '+V.tries+' tries!';
+  $('win-reward').textContent='+'+gained+' salvage';
+  setTimeout(()=>$('win-overlay').classList.add('show'), 350);
+}
+$('v-back').onclick =()=>{ show('map-screen'); renderMap(); };
+$('v-reset').onclick=()=>{ if(V.solvedNow) return; V.cur=new Array(V.board.length).fill(-1); renderVCurrent(); };
+$('v-hint').onclick =vHint;
+$('v-new').onclick  =()=>startVault();
+$('v-test').onclick =vTest;
+
 // ---------- boot ----------
 // Small public namespace (also handy for automated testing).
 window.FOAS = { makePuzzle, buildCandidate, isSolved, optimalMoves, computePower, config,
                 buildBeacon, runBeaconProgram, solveBeacon, countBlocks, beaconConfig,
-                buildWell, wellSolved, wellOptimal, wellConfig };
+                buildWell, wellSolved, wellOptimal, wellConfig,
+                buildVault, vaultFeedback, vaultConfig };
 window.addEventListener('resize', ()=>{ fitCanvas(); fitBeacon(); fitWell(); });
 paintIcons();      // fill all static [data-ic] placeholders with vector icons
 loadProgress();
