@@ -7,14 +7,16 @@ and planning — wrapped in a bold "explorer at dusk" adventure. This build has 
 (fractions & ratios) — plus the world-map, salvage, and adaptive-difficulty shell
 the remaining Feats will slot into.
 
-**Art direction — "Solarpunk meets Scavenger Sci-Fi."** A reclaimed, colorful
-post-apocalypse rather than a gloomy wasteland: weathered metal panels, glowing
-clean-energy conduits with animated current, a plasma reactor core, reclaimed
-radio-relay spires, and neon-accented UI. The home screen is an illustrated,
-scrollable **Overworld** — outposts strung along a glowing energy conduit that
-lights up as you reclaim each region. All icons are custom vector art (no emoji),
-and buttons are tactile terminal keycaps. Tuned for high readability for ages
-8–12.
+**Art direction — comic-book "kid-built fort vs. goop-monsters."** A high-energy
+middle-grade graphic-novel look (think *Last Kids on Earth*): bold ink outlines,
+halftone dot shading, hard offset shadows, and a punchy slime-green / neon-cyan /
+cosmic-violet / hazard-yellow palette. The home screen is a comic **Overworld** —
+kid strongholds (Treehouse HQ, Lookout Tower, Overgrown Mall, Bunker Vault,
+Junkyard Bridge) strung along glowing zip-lines; locked spots are shrouded in
+monster goo. Buttons are chunky arcade/duct-tape keycaps, headings are
+hand-lettered with ink strokes, and all icons are custom vector art (no emoji).
+Fully self-contained (no external fonts) so it works offline. Tuned for high
+readability for ages 8–12.
 
 No Mac, no Xcode, no app store, no cost. You host these files on GitHub Pages and
 add the page to her iPad/iPhone home screen — after that it launches full-screen

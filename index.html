@@ -10,32 +10,36 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Feat" />
-<meta name="theme-color" content="#0c2a30" />
+<meta name="theme-color" content="#241041" />
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" href="icon-180.png" />
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 
 <style>
   :root{
-    --bg0:#071619; --bg1:#0c2a30; --bg2:#123f3b;
-    --metal-hi:#6f8b98; --metal-1:#3a4c58; --metal-0:#293846; --metal-lo:#16222c;
-    --cyan:#3fe9d8; --cyan-deep:#16b6ad; --gold:#ffcb4d; --amber:#ff9a33;
-    --moss:#7fe36f; --moss-deep:#39b56a; --magenta:#ff5ea8;
-    --ink:#eaf8f4; --muted:#8fb1ad; --line:rgba(120,200,190,.15);
-    /* legacy aliases so any leftover refs still resolve */
+    --bg0:#140a26; --bg1:#241041; --bg2:#3a1d6e;
+    /* panel tones (repurposed from old metal names) */
+    --metal-hi:#4a2f7a; --metal-1:#2c1a4e; --metal-0:#20123a; --metal-lo:#120a22;
+    --cyan:#25e3ff; --cyan-deep:#12aede; --gold:#ffd21e; --amber:#ff7a1a;
+    --moss:#8bff5a; --moss-deep:#57c531; --magenta:#ff3ea5;
+    --ink:#fff7ea; --muted:#c3b0e8; --line:rgba(160,120,240,.22);
+    --outline:#160f22; --violet:#7b3ff2; --pink:#ff3ea5; --wood:#8a5a2b; --wood-d:#5f3d1c;
     --power:var(--gold); --ember:var(--amber); --survivor:var(--moss);
   }
+  /* comic display font for punchy headings */
+  .comic{ font-family:system-ui,-apple-system,"Arial Black","Segoe UI",sans-serif; font-weight:900; letter-spacing:.5px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ margin:0; height:100%; }
   body{
-    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Rounded","Segoe UI",system-ui,sans-serif;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-weight:700;
     color:var(--ink); min-height:100dvh; overflow-x:hidden;
     -webkit-user-select:none; user-select:none;
     background:
-      radial-gradient(120% 78% at 50% -12%, rgba(63,233,216,.16), transparent 60%),
-      radial-gradient(85% 55% at 12% 18%, rgba(255,203,77,.10), transparent 55%),
-      radial-gradient(80% 55% at 92% 82%, rgba(127,227,111,.11), transparent 55%),
-      linear-gradient(180deg, var(--bg2), var(--bg1) 38%, var(--bg0));
+      radial-gradient(circle at center, rgba(255,255,255,.045) 1.3px, transparent 1.6px) 0 0/15px 15px,
+      radial-gradient(120% 80% at 50% -10%, rgba(139,255,90,.14), transparent 60%),
+      radial-gradient(90% 60% at 10% 14%, rgba(37,227,255,.12), transparent 55%),
+      radial-gradient(90% 60% at 92% 86%, rgba(255,62,165,.11), transparent 55%),
+      linear-gradient(180deg, var(--bg2), var(--bg1) 42%, var(--bg0));
     background-attachment:fixed;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
@@ -203,6 +207,63 @@
     background:linear-gradient(180deg, var(--metal-1), var(--metal-0)); border:1px solid rgba(63,233,216,.35); box-shadow:0 10px 24px rgba(0,0,0,.5); }
   #a2hs b{ color:var(--cyan); }
   #a2hs button{ margin-left:auto; background:transparent; border:none; color:var(--muted); font-size:18px; cursor:pointer; }
+
+  /* ================= COMIC-BOOK OVERRIDES ================= */
+  .metal{ background:linear-gradient(180deg,#3a2568,#241041); border:3px solid var(--outline); border-radius:18px;
+    box-shadow:5px 6px 0 var(--outline), inset 0 2px 0 rgba(255,255,255,.08); }
+  .brand{ font-family:system-ui,-apple-system,"Arial Black","Segoe UI",sans-serif; font-weight:900; letter-spacing:1px;
+    color:var(--gold); background:none; -webkit-background-clip:border-box; background-clip:border-box;
+    -webkit-text-stroke:2px var(--outline); paint-order:stroke fill; text-shadow:3px 4px 0 var(--outline); }
+  .brand-kicker{ color:var(--moss); letter-spacing:5px; }
+  .hudbar .game-title,.topbar .title,.panel h3{ font-family:system-ui,-apple-system,"Arial Black","Segoe UI",sans-serif; font-weight:900;
+    -webkit-text-stroke:1px var(--outline); paint-order:stroke fill; letter-spacing:.5px; }
+  .chip{ border:3px solid var(--outline); border-radius:14px; background:var(--gold); color:var(--outline);
+    box-shadow:3px 3px 0 var(--outline); font-weight:800; }
+  .chip.gold{ color:var(--outline); }
+
+  .btn{ background:var(--cyan); color:var(--outline); border:3px solid var(--outline); border-radius:16px;
+    font-weight:800; text-transform:uppercase; letter-spacing:.4px;
+    box-shadow:0 6px 0 var(--outline), 0 8px 10px rgba(0,0,0,.35); }
+  .btn .ic-svg{ color:var(--outline); }
+  .btn:active{ transform:translateY(4px); box-shadow:0 2px 0 var(--outline); }
+  .btn.primary{ background:var(--gold); }
+  .btn.primary .ic-svg{ color:var(--outline); }
+  .back{ background:var(--moss); color:var(--outline); border:3px solid var(--outline); box-shadow:0 4px 0 var(--outline); font-weight:800; }
+  .back .ic-svg{ color:var(--outline); }
+  .back:active{ transform:translateY(2px); box-shadow:0 2px 0 var(--outline); }
+
+  .hud .stat .i{ color:var(--cyan); }
+  .hud .stat .v{ font-family:system-ui,-apple-system,"Arial Black","Segoe UI",sans-serif; font-weight:900; -webkit-text-stroke:.5px var(--outline); paint-order:stroke fill; }
+
+  #board,#b-board,#w-board{ border:3px solid var(--outline); border-radius:16px; background:#1a1030; box-shadow:5px 6px 0 var(--outline); }
+
+  .blk{ border:3px solid var(--outline); color:var(--outline); box-shadow:0 4px 0 var(--outline); border-radius:12px; text-transform:uppercase; font-weight:800; }
+  .blk.move{ background:var(--moss);} .blk.turn{ background:var(--cyan);} .blk.loop{ background:var(--gold);} .blk.cond{ background:var(--pink); color:var(--outline);}
+  .blk:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--outline); }
+  .pblk{ border:3px solid var(--outline); border-radius:12px; background:#3a2568; box-shadow:3px 3px 0 var(--outline); }
+  .pblk .ic-svg{ color:var(--cyan); }
+  .pblk.block{ background:rgba(255,210,30,.2); } .pblk.block.cond{ background:rgba(255,62,165,.18); }
+  .pblk.block .ic-svg{ color:var(--gold);} .pblk.block.cond .ic-svg{ color:var(--pink);}
+  .program{ border:3px dashed var(--outline); border-radius:14px; background:rgba(20,10,32,.55); }
+  .stepper button{ border:2px solid var(--outline); background:var(--cyan); color:var(--outline); box-shadow:0 3px 0 var(--outline); }
+
+  .wctl{ border:3px solid var(--outline); border-radius:14px; background:#3a2568; box-shadow:3px 3px 0 var(--outline); }
+  .wbtn{ border:3px solid var(--outline); background:var(--cyan); color:var(--outline); box-shadow:0 4px 0 var(--outline); border-radius:12px; }
+  .wbtn .ic-svg{ color:var(--outline); }
+  .wbtn:active{ transform:translateY(2px); box-shadow:0 2px 0 var(--outline); }
+  .recipe{ border:3px solid var(--outline); box-shadow:4px 4px 0 var(--outline); background:linear-gradient(180deg,#3a2568,#241041); }
+  .recipe .frac{ color:var(--gold); }
+  .now-line.good b{ color:var(--moss); }
+
+  .swatch{ border:3px solid var(--outline); border-radius:12px; box-shadow:0 3px 0 var(--outline); }
+  .swatch.sel{ box-shadow:0 0 0 3px var(--gold), 0 3px 0 var(--outline); }
+
+  .dialog{ background:linear-gradient(180deg,#3a1d6e,#241041); border:4px solid var(--outline); border-radius:22px; box-shadow:7px 8px 0 var(--outline); }
+  .dialog h2{ color:var(--gold); background:none; -webkit-background-clip:border-box; background-clip:border-box;
+    font-family:system-ui,-apple-system,"Arial Black","Segoe UI",sans-serif; font-weight:900; -webkit-text-stroke:1.5px var(--outline); paint-order:stroke fill; }
+  .dialog .flag .ic-svg{ color:var(--gold); }
+
+  .toast,#a2hs{ border:3px solid var(--outline); box-shadow:4px 4px 0 var(--outline); }
 </style>
 </head>
 <body>
@@ -219,9 +280,9 @@
     </div>
 
     <div class="brand-plate metal">
-      <div class="brand-kicker">RECLAIM THE WORLD</div>
-      <div class="brand">Feats of Apocalyptic Success</div>
-      <div class="brand-sub">Follow the energy conduit — bring every outpost back online.</div>
+      <div class="brand-kicker">SUIT UP, HERO!</div>
+      <div class="brand">Apocalypse Base Builder</div>
+      <div class="brand-sub">Zip between hideouts, power up your base, and outsmart the goop-monsters!</div>
     </div>
 
     <div id="overworld"></div>
@@ -237,7 +298,7 @@
   <section id="game-screen" class="screen">
     <div class="topbar">
       <button class="back" id="back-btn"><span data-ic="back"></span> Map</button>
-      <div class="title">Power Grid Ruins</div>
+      <div class="title">Treehouse HQ</div>
     </div>
     <div class="hud metal">
       <div class="stat"><div class="i" data-ic="spire"></div><div class="v" id="hud-towers">0/0</div><div class="l">Relays</div></div>
@@ -248,7 +309,7 @@
 
     <canvas id="board" width="480" height="480"></canvas>
 
-    <div class="hint-line">Tap a conduit to rotate it — route power from the <span data-ic="bolt"></span> plasma core to every <span data-ic="spire"></span> relay spire!</div>
+    <div class="hint-line">Tap a cable to spin it — send juice from the <span data-ic="bolt"></span> battery to every <span data-ic="spire"></span> antenna!</div>
 
     <div class="controls">
       <button class="btn" id="reset-btn"><span data-ic="reset"></span> Reset</button>
@@ -261,7 +322,7 @@
   <section id="beacon-screen" class="screen">
     <div class="topbar">
       <button class="back" id="b-back"><span data-ic="back"></span> Map</button>
-      <div class="title">The Signal Outpost</div>
+      <div class="title">Lookout Tower</div>
     </div>
     <div class="hud metal">
       <div class="stat"><div class="i" data-ic="cell"></div><div class="v" id="b-crystals">0/0</div><div class="l">Cells</div></div>
@@ -291,7 +352,7 @@
   <section id="well-screen" class="screen">
     <div class="topbar">
       <button class="back" id="w-back"><span data-ic="back"></span> Map</button>
-      <div class="title">Purification Springs</div>
+      <div class="title">Overgrown Mall</div>
     </div>
     <div class="hud metal">
       <div class="stat"><div class="i" data-ic="flask"></div><div class="v" id="w-batch">0</div><div class="l">Units</div></div>
@@ -584,26 +645,26 @@ const FEATS=[
 
 // ---------- overworld map ----------
 const REGIONS = {
-  castle:{ name:'Power Grid Ruins',   tint:'#ffcb4d' },
-  beacon:{ name:'Signal Outpost',     tint:'#3fe9d8' },
-  well:{   name:'Purification Springs',tint:'#59c7fa' },
-  vault:{  name:'Vault Bunkers',       tint:'#c78cf2' },
-  bridge:{ name:'Reclaimed Span',      tint:'#7fe36f' }
+  castle:{ name:'Treehouse HQ',    tint:'#ffd21e' },
+  beacon:{ name:'Lookout Tower',   tint:'#25e3ff' },
+  well:{   name:'Overgrown Mall',  tint:'#8bff5a' },
+  vault:{  name:'Bunker Vault',    tint:'#b98bff' },
+  bridge:{ name:'Junkyard Bridge', tint:'#ff7a1a' }
 };
 const NODEPOS = [ [262,84],[100,206],[252,326],[104,450],[250,568] ];
 const VW=360, VH=650;
 const EMBLEM = {
-  castle: ICONS.bolt,
-  beacon: ICONS.dish,
-  well:  '<path d="M12 3s6.4 7 6.4 11.2A6.4 6.4 0 0 1 5.6 14.2C5.6 10 12 3 12 3z"/>',
+  castle: '<path d="M6 10a6 6 0 0 1 12 0 6 6 0 0 1-.7 2.8H6.7A6 6 0 0 1 6 10z"/><path d="M8 12h8v6H8z"/><path d="M7.4 12L12 8l4.6 4z"/><rect x="11" y="18" width="2" height="4"/>',
+  beacon: '<path d="M9 21l1-11h4l1 11z"/><path d="M8 10h8l-2-5h-4z"/><rect x="10.6" y="12" width="2.8" height="3"/>',
+  well:  '<path d="M8 8h8l-1.2 12H9.2z"/><path d="M9 8l.8-3h4.4l.8 3z"/><rect x="13" y="3" width="1.6" height="7" rx=".8"/>',
   vault: ICONS.lock,
-  bridge:'<path d="M3 17v-2a9 9 0 0 1 18 0v2h-2v-2a7 7 0 0 0-14 0v2z"/><path d="M3 17h18M8 17v3.4M16 17v3.4M12 17v3.4" stroke="currentColor" stroke-width="1.5" fill="none"/>'
+  bridge:'<path d="M2 15c5-7 15-7 20 0" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M2 15v5M22 15v5M8 12.5v7.5M16 12.5v7.5M12 11v9" stroke="currentColor" stroke-width="1.7" fill="none"/>'
 };
 function nodeUnlocked(idx){ return idx===0 || !!G.claimed[FEATS[idx-1].id]; }
 
 function renderMap(){
   $('map-salvage').innerHTML = icon('crate') + ' ' + G.salvage;
-  $('map-progress').textContent = Object.keys(G.claimed).length + '/' + FEATS.length + ' outposts online';
+  $('map-progress').textContent = Object.keys(G.claimed).length + '/' + FEATS.length + ' hideouts cleared';
 
   const sw=$('swatches'); sw.innerHTML='';
   Flags.forEach((col,i)=>{
@@ -627,47 +688,54 @@ function buildOverworld(){
   const p=[];
   p.push('<svg viewBox="0 0 '+VW+' '+VH+'" xmlns="http://www.w3.org/2000/svg">');
   p.push('<defs>');
-  p.push('<radialGradient id="pad" cx="38%" cy="30%" r="80%"><stop offset="0" stop-color="#5b7080"/><stop offset="1" stop-color="#1b2632"/></radialGradient>');
-  p.push('<radialGradient id="sky" cx="50%" cy="8%" r="95%"><stop offset="0" stop-color="#17454b"/><stop offset=".55" stop-color="#0d2229"/><stop offset="1" stop-color="#081419"/></radialGradient>');
-  p.push('<filter id="glow" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="5"/></filter>');
+  p.push('<radialGradient id="pad" cx="36%" cy="26%" r="88%"><stop offset="0" stop-color="#5a3aa0"/><stop offset="1" stop-color="#241041"/></radialGradient>');
+  p.push('<radialGradient id="sky" cx="50%" cy="6%" r="100%"><stop offset="0" stop-color="#4a2585"/><stop offset=".55" stop-color="#2a1450"/><stop offset="1" stop-color="#160a2b"/></radialGradient>');
+  p.push('<filter id="glow" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="6"/></filter>');
   p.push('</defs>');
   p.push('<rect width="'+VW+'" height="'+VH+'" fill="url(#sky)"/>');
 
-  // region auras + scattered scrap specks
-  FEATS.forEach((f,i)=>{ const [x,y]=NODEPOS[i]; const tint=REGIONS[f.id].tint;
-    p.push('<circle cx="'+x+'" cy="'+y+'" r="78" fill="'+tint+'" opacity="'+(nodeUnlocked(i)?0.12:0.05)+'"/>');
-  });
-  for(let i=0;i<26;i++){ const x=(i*97+31)%VW, y=(i*143+57)%VH, r=(i%3)?1:1.6;
-    p.push('<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="#7fe3d8" opacity="0.10"/>'); }
+  // halftone dot field
+  let dots='';
+  for(let gy=8; gy<VH; gy+=17){ for(let gx=((((gy/17)|0)%2)*8)+6; gx<VW; gx+=16){ dots+='<circle cx="'+gx+'" cy="'+gy+'" r="1.2" fill="#ffffff" opacity="0.05"/>'; } }
+  p.push(dots);
 
-  // conduit segments between outposts
+  // region auras
+  FEATS.forEach((f,i)=>{ const [x,y]=NODEPOS[i], tint=REGIONS[f.id].tint;
+    p.push('<circle cx="'+x+'" cy="'+y+'" r="80" fill="'+tint+'" opacity="'+(nodeUnlocked(i)?0.15:0.06)+'"/>'); });
+
+  // zip-line / spray-paint trails
   for(let i=0;i<FEATS.length-1;i++){
     const [x0,y0]=NODEPOS[i], [x1,y1]=NODEPOS[i+1], my=(y0+y1)/2;
     const d='M'+x0+' '+y0+' C '+x0+' '+my+' '+x1+' '+my+' '+x1+' '+y1;
-    p.push('<path d="'+d+'" fill="none" stroke="#0d181f" stroke-width="13" stroke-linecap="round"/>');
-    p.push('<path d="'+d+'" fill="none" stroke="#2a3540" stroke-width="9" stroke-linecap="round"/>');
-    if(nodeUnlocked(i+1))
-      p.push('<path d="'+d+'" fill="none" stroke="#3fe9d8" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="2 12" class="conduit-active" style="filter:drop-shadow(0 0 4px rgba(63,233,216,.85))"/>');
-    else
-      p.push('<path d="'+d+'" fill="none" stroke="#41505c" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 11"/>');
+    p.push('<path d="'+d+'" fill="none" stroke="#160f22" stroke-width="12" stroke-linecap="round"/>'); // ink
+    if(nodeUnlocked(i+1)){
+      p.push('<path d="'+d+'" fill="none" stroke="#ffd21e" stroke-width="6" stroke-linecap="round"/>');
+      p.push('<path d="'+d+'" fill="none" stroke="#25e3ff" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 12" class="conduit-active" style="filter:drop-shadow(0 0 4px rgba(37,227,255,.9))"/>');
+    } else {
+      p.push('<path d="'+d+'" fill="none" stroke="#3a2a55" stroke-width="5" stroke-linecap="round"/>');
+      p.push('<path d="'+d+'" fill="none" stroke="#57c531" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 15" opacity="0.55"/>'); // slime drip
+    }
   }
 
-  // outpost nodes
+  // stronghold nodes
   FEATS.forEach((f,i)=>{
     const [x,y]=NODEPOS[i];
-    const claimedThis=!!G.claimed[f.id], open=nodeUnlocked(i), R=30;
-    const ring = claimedThis?'#ffcb4d':(open?'#3fe9d8':'#4a5560');
-    const emCol= claimedThis?'#ffe49a':(open?'#c4f6ef':'#6b7a86');
+    const claimedThis=!!G.claimed[f.id], open=nodeUnlocked(i), R=32;
+    const ring = claimedThis?'#ffd21e':(open?'#25e3ff':'#6a5a8a');
+    const emCol= claimedThis?'#fff2b0':(open?'#eafcff':'#b7a6d6');
     let g='<g class="feat'+(open?'':' locked')+'" data-idx="'+i+'" transform="translate('+x+','+y+')">';
-    g+='<circle r="46" fill="transparent"/>';   // generous tap target (also covers label)
-    if(open) g+='<circle r="'+(R+9)+'" fill="'+ring+'" opacity="0.20" filter="url(#glow)"/>';
-    g+='<circle r="'+R+'" fill="url(#pad)" stroke="'+ring+'" stroke-width="3"/>';
-    g+='<g transform="translate(-13.8,-13.8) scale(1.15)" fill="'+emCol+'" style="color:'+emCol+'">'+(open?EMBLEM[f.id]:ICONS.lock)+'</g>';
-    if(claimedThis) g+='<g transform="translate('+(R-7)+',-'+(R-7)+')"><circle r="9.5" fill="#ffcb4d"/><g transform="translate(-6.6,-6.6) scale(0.55)" fill="#1a1200" style="color:#1a1200">'+ICONS.check+'</g></g>';
-    g+='<text class="node-label" x="0" y="'+(R+19)+'" text-anchor="middle" font-size="13" fill="#eaf8f4">'+REGIONS[f.id].name+'</text>';
-    const sub = claimedThis?'ONLINE':(open?('+'+f.reward+' SALVAGE'):'LOCKED');
-    const subcol = claimedThis?'#ffcb4d':(open?'#3fe9d8':'#7e8c96');
-    g+='<text x="0" y="'+(R+34)+'" text-anchor="middle" font-size="10" font-weight="800" letter-spacing=".4" fill="'+subcol+'">'+sub+'</text>';
+    g+='<circle r="46" fill="transparent"/>';
+    if(open) g+='<circle r="'+(R+10)+'" fill="'+ring+'" opacity="0.22" filter="url(#glow)"/>';
+    g+='<circle cx="3" cy="5" r="'+R+'" fill="#160f22"/>';                          // hard ink shadow
+    g+='<circle r="'+R+'" fill="url(#pad)" stroke="#160f22" stroke-width="4"/>';    // sticker face + ink keyline
+    g+='<circle r="'+(R-4)+'" fill="none" stroke="'+ring+'" stroke-width="3"/>';    // neon ring
+    g+='<g transform="translate(-13.2,-13.2) scale(1.1)" fill="'+emCol+'" style="color:'+emCol+'">'+(open?EMBLEM[f.id]:ICONS.lock)+'</g>';
+    if(!open){ g+='<g fill="#57c531"><path d="M-10 '+(-R+2)+' q3 17 6 0 z"/><path d="M12 '+(-R+8)+' q2.5 13 5 0 z"/></g>'; } // monster goo drips
+    if(claimedThis) g+='<g transform="translate('+(R-6)+',-'+(R-6)+')"><circle r="11" fill="#ffd21e" stroke="#160f22" stroke-width="3"/><g transform="translate(-6.6,-6.6) scale(0.55)" fill="#160f22" style="color:#160f22">'+ICONS.check+'</g></g>';
+    g+='<text class="node-label" x="0" y="'+(R+21)+'" text-anchor="middle" font-size="14" fill="#fff7ea" stroke="#160f22" stroke-width="3" paint-order="stroke" style="font-weight:900;">'+REGIONS[f.id].name+'</text>';
+    const sub = claimedThis?'CLEARED!':(open?('+'+f.reward+' SCRAP'):'GOO-LOCKED');
+    const subcol = claimedThis?'#ffd21e':(open?'#25e3ff':'#8bff5a');
+    g+='<text x="0" y="'+(R+35)+'" text-anchor="middle" font-size="10" font-weight="800" letter-spacing=".4" fill="'+subcol+'" stroke="#160f22" stroke-width="2" paint-order="stroke">'+sub+'</text>';
     g+='</g>';
     p.push(g);
   });
@@ -757,14 +825,14 @@ function render(){
     const x=c*cell, y=r*cell, pad=cell*0.055, iw=cell-2*pad;
     // weathered metal panel
     const g=ctx.createLinearGradient(0,y,0,y+cell);
-    if(t.kind==='empty'||t.kind==='rubble'){ g.addColorStop(0,'#19212b'); g.addColorStop(1,'#0f161e'); }
-    else { g.addColorStop(0,'#3b4b59'); g.addColorStop(1,'#212d39'); }
+    if(t.kind==='empty'||t.kind==='rubble'){ g.addColorStop(0,'#241041'); g.addColorStop(1,'#160a2b'); }
+    else { g.addColorStop(0,'#3a2568'); g.addColorStop(1,'#241041'); }
     ctx.fillStyle=g; rrect(x+pad,y+pad,iw,iw,cell*0.16); ctx.fill();
-    ctx.strokeStyle='rgba(180,220,225,.13)'; ctx.lineWidth=1.3; ctx.stroke();
+    ctx.strokeStyle='#160f22'; ctx.lineWidth=2.5; ctx.stroke();
     // recessed slot
-    ctx.beginPath(); ctx.arc(x+cell/2,y+cell/2,cell*0.33,0,7); ctx.fillStyle='rgba(0,0,0,.20)'; ctx.fill();
-    // corner rivets
-    ctx.fillStyle='rgba(150,185,190,.18)'; const off=pad+cell*0.09, rv=cell*0.028;
+    ctx.beginPath(); ctx.arc(x+cell/2,y+cell/2,cell*0.33,0,7); ctx.fillStyle='rgba(0,0,0,.22)'; ctx.fill();
+    // corner bolts
+    ctx.fillStyle='rgba(255,210,30,.22)'; const off=pad+cell*0.09, rv=cell*0.028;
     for(const [rx,ry] of [[x+off,y+off],[x+cell-off,y+off],[x+off,y+cell-off],[x+cell-off,y+cell-off]]){ ctx.beginPath(); ctx.arc(rx,ry,rv,0,7); ctx.fill(); }
 
     if(t.kind==='rubble'){ ctx.fillStyle='rgba(90,110,120,.28)'; ctx.beginPath(); ctx.arc(x+cell/2,y+cell/2,cell*0.11,0,7); ctx.fill(); continue; }
@@ -776,8 +844,8 @@ function render(){
     for(const e of ALL){ if(!(t.edges&e)) continue;
       const [ex,ey]=edgePoint(e,x,y,cx,cy);
       ctx.lineCap='round';
-      ctx.strokeStyle='#121b23'; ctx.lineWidth=casing+3; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(ex,ey); ctx.stroke();
-      ctx.strokeStyle= live?'#20343a':'#2c3945'; ctx.lineWidth=casing; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(ex,ey); ctx.stroke();
+      ctx.strokeStyle='#160f22'; ctx.lineWidth=casing+4; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(ex,ey); ctx.stroke();
+      ctx.strokeStyle= live?'#2a1a4e':'#33235c'; ctx.lineWidth=casing; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(ex,ey); ctx.stroke();
     }
     // energy core — animated current when live
     for(const e of ALL){ if(!(t.edges&e)) continue;
@@ -787,14 +855,14 @@ function render(){
         ctx.strokeStyle='#ffe07a'; ctx.shadowColor='rgba(63,233,216,.9)'; ctx.shadowBlur=cell*0.16;
         ctx.lineWidth=casing*0.5; ctx.lineCap='round';
         ctx.setLineDash([cell*0.10, cell*0.14]); ctx.lineDashOffset=-flowT*cell*1.9;
-      } else { ctx.strokeStyle='#5a6a75'; ctx.lineWidth=casing*0.32; ctx.lineCap='round'; }
+      } else { ctx.strokeStyle='#6a5a9a'; ctx.lineWidth=casing*0.32; ctx.lineCap='round'; }
       ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(ex,ey); ctx.stroke();
       ctx.restore();
     }
     // hub node
     ctx.beginPath(); ctx.arc(cx,cy,casing*0.68,0,7);
     if(live){ ctx.save(); ctx.shadowColor='rgba(255,209,64,.8)'; ctx.shadowBlur=cell*0.14; ctx.fillStyle='#ffe08a'; ctx.fill(); ctx.restore(); }
-    else { ctx.fillStyle='#586873'; ctx.fill(); }
+    else { ctx.fillStyle='#5a4a86'; ctx.fill(); }
 
     // plasma core (source)
     if(t.kind==='source'){
@@ -1146,14 +1214,14 @@ function drawBeacon(state){
   for(let r=0;r<n;r++)for(let c=0;c<n;c++){
     const wall=b.walls.has(r+','+c), x=c*bcell, y=r*bcell, pad=bcell*0.05, iw=bcell-2*pad;
     const g=bctx.createLinearGradient(0,y,0,y+bcell);
-    if(wall){ g.addColorStop(0,'#28374a'); g.addColorStop(1,'#161f2b'); }
-    else { g.addColorStop(0,'#123339'); g.addColorStop(1,'#0b1e27'); }
+    if(wall){ g.addColorStop(0,'#3a2568'); g.addColorStop(1,'#241041'); }
+    else { g.addColorStop(0,'#2a1650'); g.addColorStop(1,'#1a0f30'); }
     bctx.fillStyle=g; rrectB(x+pad,y+pad,iw,iw,bcell*0.16); bctx.fill();
     if(wall){
-      bctx.strokeStyle='rgba(150,185,190,.14)'; bctx.lineWidth=1.2; bctx.stroke();
-      bctx.fillStyle='rgba(150,180,185,.16)'; const o=pad+bcell*0.13, rv=bcell*0.02;
+      bctx.strokeStyle='#160f22'; bctx.lineWidth=2.5; bctx.stroke();
+      bctx.fillStyle='rgba(255,210,30,.20)'; const o=pad+bcell*0.13, rv=bcell*0.02;
       for(const [rx,ry] of [[x+o,y+o],[x+bcell-o,y+o],[x+o,y+bcell-o],[x+bcell-o,y+bcell-o]]){ bctx.beginPath(); bctx.arc(rx,ry,rv,0,7); bctx.fill(); }
-    } else { bctx.strokeStyle='rgba(63,233,216,.10)'; bctx.lineWidth=1; bctx.stroke(); }
+    } else { bctx.strokeStyle='rgba(37,227,255,.12)'; bctx.lineWidth=1; bctx.stroke(); }
   }
 
   // corridor conduit trail
@@ -1428,8 +1496,8 @@ function drawTank(cx, top, tw, h, t, pulse){
   // ticks
   wctx.strokeStyle='rgba(255,255,255,.16)'; wctx.lineWidth=1;
   for(let s=1;s<t.cap;s++){ const yy=bot-h*(s/t.cap); wctx.beginPath(); wctx.moveTo(left+2,yy); wctx.lineTo(left+tw*0.3,yy); wctx.stroke(); }
-  // frame
-  rrectW(left, top, tw, h, tw*0.28); wctx.lineWidth=3; wctx.strokeStyle='rgba(150,190,195,.45)'; wctx.stroke();
+  // frame (ink outline)
+  rrectW(left, top, tw, h, tw*0.28); wctx.lineWidth=3.5; wctx.strokeStyle='#160f22'; wctx.stroke();
   if(t.fill>0){ wctx.save(); wctx.shadowColor=t.col; wctx.shadowBlur=tw*0.5*(0.5+0.5*pulse); rrectW(left, top, tw, h, tw*0.28); wctx.lineWidth=1.5; wctx.strokeStyle=t.col; wctx.stroke(); wctx.restore(); }
   wctx.restore();
   // labels
