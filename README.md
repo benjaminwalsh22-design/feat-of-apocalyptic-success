@@ -2,9 +2,10 @@
 
 An installable web game for an advanced young learner. Rebuild a ruined world
 one **Feat** at a time by solving logic puzzles that stretch spatial reasoning
-and planning — wrapped in a bold "explorer at dusk" adventure. This build has **two** fully playable Feats — **"Claim the Castle"**
-(power-routing) and **"Light the Beacon"** (block coding) — plus the world-map,
-salvage, and adaptive-difficulty shell the other Feats will slot into.
+and planning — wrapped in a bold "explorer at dusk" adventure. This build has **three** fully playable Feats — **"Claim the Castle"**
+(power-routing), **"Light the Beacon"** (block coding), and **"Purify the Well"**
+(fractions & ratios) — plus the world-map, salvage, and adaptive-difficulty shell
+the remaining Feats will slot into.
 
 **Art direction — "Solarpunk meets Scavenger Sci-Fi."** A reclaimed, colorful
 post-apocalypse rather than a gloomy wasteland: weathered metal panels, glowing
@@ -79,7 +80,13 @@ wall it just resets so she can tweak and try again. The clever trick to discover
 `Repeat { If Path Ahead: Forward }` glides to a wall without having to count steps
 — real loops-and-conditionals thinking.
 
-Both Feats have no lives, no timers, and no way to lose, and each has its own
+**Purify the Well** — Mix the cleansing formula by filling reagent tanks to match
+a target **fraction** ("fill the vat to 3/4") or **ratio** ("3 parts Purifier to
+1 part Spring Water — make 8 units"). A live readout shows the current mix
+*reduced to lowest terms*, so she practices equivalent fractions and scaling a
+ratio to a total. Correct mix → the spring runs clean.
+
+All Feats have no lives, no timers, and no way to lose, and each has its own
 adaptive challenge level that rises automatically the faster and cleaner she
 solves. Claiming a Feat earns salvage and unlocks the next one on the map.
 
@@ -94,6 +101,6 @@ finished.
 
 ## What's next
 
-Two Feats down. The map still lists *Purify the Well* (fractions & ratios),
-*Crack the Vault* (deduction), and *Rebuild the Bridge* (balance-algebra) — each
-a new puzzle module that reuses this same map, salvage, and difficulty plumbing.
+Three Feats down. The map still lists *Crack the Vault* (deduction) and
+*Rebuild the Bridge* (balance-algebra) — each a new puzzle module that reuses
+this same map, salvage, and difficulty plumbing.
