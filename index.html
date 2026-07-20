@@ -111,7 +111,7 @@
   .stat .v{ font-weight:900; font-size:17px; }
   .stat .l{ font-size:9px; letter-spacing:.4px; color:var(--muted); text-transform:uppercase; }
 
-  #board,#b-board{ display:block; margin:0 auto; border-radius:18px; touch-action:none;
+  #board,#b-board,#w-board,#br-board{ display:block; margin:0 auto; border-radius:18px; touch-action:none;
     background:#0b1620; border:1px solid rgba(120,200,190,.18);
     box-shadow: inset 0 0 30px rgba(0,0,0,.5), 0 8px 20px rgba(0,0,0,.4); }
   .hint-line{ text-align:center; color:var(--muted); font-size:13px; margin:11px 8px 12px; line-height:1.45; }
@@ -254,7 +254,7 @@
   .hud .stat .i{ color:var(--cyan); }
   .hud .stat .v{ font-family:system-ui,-apple-system,"Arial Black","Segoe UI",sans-serif; font-weight:900; -webkit-text-stroke:.5px var(--outline); paint-order:stroke fill; }
 
-  #board,#b-board,#w-board{ border:3px solid var(--outline); border-radius:16px; background:#1a1030; box-shadow:5px 6px 0 var(--outline); }
+  #board,#b-board,#w-board,#br-board{ border:3px solid var(--outline); border-radius:16px; background:#1a1030; box-shadow:5px 6px 0 var(--outline); }
 
   .blk{ border:3px solid var(--outline); color:var(--outline); box-shadow:0 4px 0 var(--outline); border-radius:12px; text-transform:uppercase; font-weight:800; }
   .blk.move{ background:var(--moss);} .blk.turn{ background:var(--cyan);} .blk.loop{ background:var(--gold);} .blk.cond{ background:var(--pink); color:var(--outline);}
@@ -418,6 +418,32 @@
       <button class="btn" id="v-new"><span data-ic="grid"></span> New</button>
     </div>
   </section>
+
+  <!-- ============ BRIDGE SCREEN (balance algebra) ============ -->
+  <section id="bridge-screen" class="screen">
+    <div class="topbar">
+      <button class="back" id="br-back"><span data-ic="back"></span> Map</button>
+      <div class="title">Junkyard Bridge</div>
+    </div>
+    <div class="hud metal">
+      <div class="stat"><div class="i" data-ic="cell"></div><div class="v" id="br-x">1</div><div class="l">Crate</div></div>
+      <div class="stat"><div class="i" data-ic="cursor"></div><div class="v" id="br-tries">0</div><div class="l">Tweaks</div></div>
+      <div class="stat"><div class="i" data-ic="bars"></div><div class="v" id="br-level">Lv 1</div><div class="l">Challenge</div></div>
+      <div class="stat"><div class="i" data-ic="crate"></div><div class="v" id="br-salvage">0</div><div class="l">Salvage</div></div>
+    </div>
+
+    <canvas id="br-board" width="480" height="480"></canvas>
+
+    <div class="recipe metal" id="br-recipe"></div>
+    <div class="now-line" id="br-now"></div>
+    <div class="well-controls" id="br-controls"></div>
+
+    <div class="controls" style="margin-top:12px;">
+      <button class="btn" id="br-reset"><span data-ic="reset"></span> Reset</button>
+      <button class="btn" id="br-hint"><span data-ic="spark"></span> Hint</button>
+      <button class="btn" id="br-new"><span data-ic="grid"></span> New</button>
+    </div>
+  </section>
 </div>
 
 <!-- Win overlay -->
@@ -486,7 +512,8 @@ const ICONS = {
   drop:'<path d="M12 3s6.4 7 6.4 11.2A6.4 6.4 0 0 1 5.6 14.2C5.6 10 12 3 12 3z"/>',
   flask:'<path d="M10 3h4v1.2h-1v4.3l4.4 8A2 2 0 0 1 15.6 20H8.4a2 2 0 0 1-1.8-3.5l4.4-8V4.2h-1z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8.7 13h6.6" stroke="currentColor" stroke-width="1.5"/>',
   plus:'<path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/>',
-  minus:'<path d="M5 11h14v2H5z"/>'
+  minus:'<path d="M5 11h14v2H5z"/>',
+  bridge:'<path d="M2 15c5-7 15-7 20 0" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M2 15v5M22 15v5M8 12.5v7.5M16 12.5v7.5M12 11v9" stroke="currentColor" stroke-width="1.7" fill="none"/>'
 };
 function icon(name, extra){ return '<svg class="ic-svg'+(extra?' '+extra:'')+'" viewBox="0 0 24 24" aria-hidden="true">'+(ICONS[name]||'')+'</svg>'; }
 function paintIcons(root){ (root||document).querySelectorAll('[data-ic]').forEach(el=>{ el.innerHTML=icon(el.dataset.ic); el.removeAttribute('data-ic'); }); }
@@ -628,7 +655,7 @@ const FLAG_COST = 40;
 
 const G = {
   salvage:0,
-  levels:{ castle:1, beacon:1, well:1, vault:1 },   // adaptive difficulty per feat
+  levels:{ castle:1, beacon:1, well:1, vault:1, bridge:1 },   // adaptive difficulty per feat
   claimed:{},                       // { castle:true, beacon:true, ... }
   unlockedFlags:[0], selFlag:0,
   lastFeat:'castle',
@@ -640,9 +667,9 @@ function loadProgress(){
   G.salvage = s.salvage||0;
   // per-feat levels (migrate from an older single-level save)
   if(s.levels && typeof s.levels==='object'){
-    G.levels = { castle:s.levels.castle||1, beacon:s.levels.beacon||1, well:s.levels.well||1, vault:s.levels.vault||1 };
+    G.levels = { castle:s.levels.castle||1, beacon:s.levels.beacon||1, well:s.levels.well||1, vault:s.levels.vault||1, bridge:s.levels.bridge||1 };
   } else {
-    G.levels = { castle:s.level||1, beacon:1, well:1, vault:1 };
+    G.levels = { castle:s.level||1, beacon:1, well:1, vault:1, bridge:1 };
   }
   // claimed set (migrate from an older boolean save)
   if(s.claimed && typeof s.claimed==='object') G.claimed = {...s.claimed};
@@ -683,7 +710,7 @@ const FEATS=[
   {id:'vault', title:'Crack the Vault', icon:'🔐', playable:true, reward:70,
    desc:'Use the clues to deduce the secret bunker code.',
    skill:'Deduction · Hypothesis Testing'},
-  {id:'bridge', title:'Rebuild the Bridge', icon:'🛠️', playable:false, reward:70,
+  {id:'bridge', title:'Rebuild the Bridge', icon:'🛠️', playable:true, reward:70,
    desc:'Balance the counterweights to span the chasm and reach new lands.',
    skill:'Balance Algebra · Unknowns'}
 ];
@@ -795,7 +822,7 @@ function buildOverworld(){
       else if(f.id==='beacon') startBeacon();
       else if(f.id==='well') startWell();
       else if(f.id==='vault') startVault();
-      else alert(REGIONS[f.id].name+'\n\nThis hideout is still crawling with goo — coming in a future update. Keep clearing to zip onward!');
+      else if(f.id==='bridge') startBridge();
     });
   });
 }
@@ -1023,7 +1050,7 @@ $('hint-btn').onclick=()=>{
 };
 $('new-btn').onclick=()=>{ startGame(); };
 $('back-btn').onclick=()=>{ stopFlow(); show('map-screen'); renderMap(); };
-$('win-again').onclick=()=>{ $('win-overlay').classList.remove('show'); ({castle:startGame,beacon:startBeacon,well:startWell,vault:startVault}[G.lastFeat]||startGame)(); };
+$('win-again').onclick=()=>{ $('win-overlay').classList.remove('show'); ({castle:startGame,beacon:startBeacon,well:startWell,vault:startVault,bridge:startBridge}[G.lastFeat]||startGame)(); };
 $('win-map').onclick=()=>{ $('win-overlay').classList.remove('show'); show('map-screen'); renderMap(); };
 
 // ---------- add-to-home-screen hint ----------
@@ -1703,13 +1730,196 @@ $('v-hint').onclick =vHint;
 $('v-new').onclick  =()=>startVault();
 $('v-test').onclick =vTest;
 
+// =====================================================================
+//  FEAT 5 — Rebuild the Bridge (balance algebra: solve for x)
+// =====================================================================
+function buildBridge(level){
+  const L=Math.max(1,Math.min(8,level));
+  const xMax = L<=2?4 : L<=4?6 : L<=6?8 : 10;
+  const x = 2 + rint(xMax);           // mystery crate weight (answer), 2..
+  let leftA,leftB,rightA,rightB;
+  if(L<=1){ leftA=2+rint(3); leftB=0; rightA=0; rightB=leftA*x; }                 // a·x = c
+  else if(L<=3){ leftA=2+rint(3); leftB=1+rint(5); rightA=0; rightB=leftA*x+leftB; } // a·x + b = c
+  else { rightA=1+rint(2); leftA=rightA+1+rint(2); leftB=rint(5); rightB=(leftA-rightA)*x+leftB; } // a·x+b = c·x+d
+  return { level, x, leftA, leftB, rightA, rightB, guess:1 };
+}
+function bridgeLeft(b,g){ return b.leftA*g + b.leftB; }
+function bridgeRight(b,g){ return b.rightA*g + b.rightB; }
+function bridgeSolved(b){ return bridgeLeft(b,b.guess)===bridgeRight(b,b.guess); }
+function bridgeExpr(a,b){ if(a===0) return ''+b; const c=(a===1?'1 crate':a+' crates'); return c+(b>0?(' + '+b):''); }
+
+// ---- controller ----
+const BR={ board:null, tries:0, hintUsed:false, solvedNow:false, startTime:0 };
+const brcanvas=$('br-board'), brctx=brcanvas.getContext('2d');
+let brPx=480, brTime=0, brAnimRAF=null, brParts=[];
+
+function startBridge(){
+  G.lastFeat='bridge';
+  BR.board=buildBridge(G.levels.bridge);
+  BR.tries=0; BR.hintUsed=false; BR.solvedNow=false; BR.startTime=Date.now(); brParts=[];
+  show('bridge-screen'); fitBridge(); renderBridgeControls(); renderBridgeText(); updateBridgeHUD(); startBridgeAnim();
+}
+function fitBridge(){
+  const size=Math.min(window.innerWidth-32,520), dpr=window.devicePixelRatio||1;
+  brPx=size; brcanvas.style.width=size+'px'; brcanvas.style.height=size+'px';
+  brcanvas.width=Math.round(size*dpr); brcanvas.height=Math.round(size*dpr);
+  brctx.setTransform(dpr,0,0,dpr,0,0);
+  if(BR.board) drawBridge();
+}
+function startBridgeAnim(){ if(brAnimRAF) return;
+  const loop=(now)=>{ brTime=now/1000;
+    if($('bridge-screen').classList.contains('active')){ drawBridge(); brAnimRAF=requestAnimationFrame(loop);} else brAnimRAF=null; };
+  brAnimRAF=requestAnimationFrame(loop);
+}
+function stopBridgeAnim(){ if(brAnimRAF){ cancelAnimationFrame(brAnimRAF); brAnimRAF=null; } }
+
+function updateBridgeHUD(){
+  $('br-x').textContent=BR.board.guess; $('br-tries').textContent=BR.tries;
+  $('br-level').textContent='Lv '+G.levels.bridge; $('br-salvage').textContent=G.salvage;
+}
+function renderBridgeText(){
+  const b=BR.board;
+  $('br-recipe').innerHTML='Balance the bridge! &nbsp;<span class="frac">'+bridgeExpr(b.leftA,b.leftB)+'</span>&nbsp; must equal &nbsp;<span class="frac">'+bridgeExpr(b.rightA,b.rightB)+'</span><br>How heavy is each mystery crate?';
+  updateBridgeNow();
+}
+function updateBridgeNow(){
+  const b=BR.board, g=b.guess, L=bridgeLeft(b,g), R=bridgeRight(b,g), el=$('br-now');
+  const status = L===R ? 'balanced!' : (L>R ? 'left side too heavy' : 'right side too heavy');
+  el.innerHTML='If each crate = <b>'+g+'</b>:  Left <b>'+L+'</b> vs Right <b>'+R+'</b> — '+status;
+  el.classList.toggle('good', L===R);
+}
+function renderBridgeControls(){
+  const host=$('br-controls'); host.innerHTML='';
+  const row=document.createElement('div'); row.className='wctl';
+  const dot=document.createElement('span'); dot.className='dot'; dot.style.background='#ffca4d'; dot.style.color='#ffca4d';
+  const nm=document.createElement('span'); nm.className='nm'; nm.textContent='Each crate weighs';
+  const minus=document.createElement('button'); minus.className='wbtn'; minus.innerHTML=icon('minus'); minus.onclick=()=>bridgeAdjust(-1);
+  const val=document.createElement('span'); val.className='val'; val.id='brval'; val.innerHTML=BR.board.guess+'<small> kg</small>';
+  const plus=document.createElement('button'); plus.className='wbtn'; plus.innerHTML=icon('plus'); plus.onclick=()=>bridgeAdjust(1);
+  row.append(dot,nm,minus,val,plus); host.appendChild(row);
+}
+function bridgeAdjust(d){
+  if(BR.solvedNow) return;
+  const b=BR.board, nv=b.guess+d, max=Math.max(12,b.x+4);
+  if(nv<0||nv>max) return;
+  b.guess=nv; BR.tries++;
+  const val=$('brval'); if(val) val.innerHTML=b.guess+'<small> kg</small>';
+  updateBridgeHUD(); updateBridgeNow();
+  if(bridgeSolved(b)) winBridge();
+}
+
+// ---- rendering ----
+function rrectBR(x,y,w,h,r){ brctx.beginPath(); brctx.moveTo(x+r,y); brctx.arcTo(x+w,y,x+w,y+h,r); brctx.arcTo(x+w,y+h,x,y+h,r); brctx.arcTo(x,y+h,x,y,r); brctx.arcTo(x,y,x+w,y,r); brctx.closePath(); }
+function drawBridge(){
+  const b=BR.board; if(!b) return;
+  const g=b.guess, L=bridgeLeft(b,g), R=bridgeRight(b,g), solved=(L===R);
+  const S=brPx, cx=S*0.5; brctx.clearRect(0,0,S,S);
+  const pulse=0.5+0.5*Math.sin(brTime*3);
+
+  // bridge anchor posts
+  const postW=S*0.055, postTop=S*0.09, postH=S*0.20;
+  brctx.strokeStyle='#160f22'; brctx.lineWidth=3;
+  for(const px of [S*0.10, S*0.90-postW]){ brctx.fillStyle='#5f3d1c'; rrectBR(px,postTop,postW,postH,4); brctx.fill(); brctx.stroke(); }
+  // bridge deck (planks when solved, broken gap otherwise)
+  const bx0=S*0.10+postW, bx1=S*0.90-postW, bY=postTop+S*0.02;
+  if(solved){
+    brctx.save(); brctx.shadowColor='rgba(139,255,90,.85)'; brctx.shadowBlur=S*0.05*(0.6+0.5*pulse);
+    const planks=9, pw=(bx1-bx0)/planks;
+    for(let i=0;i<planks;i++){ brctx.fillStyle=i%2?'#8a5a2b':'#a06a34'; rrectBR(bx0+i*pw+1,bY,pw-2,S*0.05,3); brctx.fill(); brctx.strokeStyle='#160f22'; brctx.lineWidth=2.5; brctx.stroke(); }
+    brctx.restore();
+  } else {
+    brctx.strokeStyle='rgba(255,255,255,.18)'; brctx.lineWidth=3; brctx.setLineDash([6,10]);
+    brctx.beginPath(); brctx.moveTo(bx0,bY+S*0.025); brctx.lineTo(bx1,bY+S*0.025); brctx.stroke(); brctx.setLineDash([]);
+  }
+
+  // fulcrum tower
+  const pivotY=S*0.47, baseY=S*0.78;
+  brctx.fillStyle='#4a2f7a'; brctx.strokeStyle='#160f22'; brctx.lineWidth=3;
+  brctx.beginPath(); brctx.moveTo(cx-S*0.022,pivotY); brctx.lineTo(cx+S*0.022,pivotY); brctx.lineTo(cx+S*0.085,baseY); brctx.lineTo(cx-S*0.085,baseY); brctx.closePath(); brctx.fill(); brctx.stroke();
+
+  // beam (tilts toward heavier side)
+  const diff=L-R, ang = solved?0 : Math.max(-0.26, Math.min(0.26, -diff*0.03));
+  const half=S*0.32;
+  const lx=cx-half*Math.cos(ang), ly=pivotY-half*Math.sin(ang);
+  const rx=cx+half*Math.cos(ang), ry=pivotY+half*Math.sin(ang);
+  brctx.lineCap='round';
+  brctx.strokeStyle='#160f22'; brctx.lineWidth=S*0.05; brctx.beginPath(); brctx.moveTo(lx,ly); brctx.lineTo(rx,ry); brctx.stroke();
+  brctx.strokeStyle='#ffd21e'; brctx.lineWidth=S*0.028; brctx.beginPath(); brctx.moveTo(lx,ly); brctx.lineTo(rx,ry); brctx.stroke();
+  brctx.fillStyle='#25e3ff'; brctx.strokeStyle='#160f22'; brctx.lineWidth=3; brctx.beginPath(); brctx.arc(cx,pivotY,S*0.03,0,7); brctx.fill(); brctx.stroke();
+
+  drawPan(lx,ly,b.leftA,b.leftB,L,solved);
+  drawPan(rx,ry,b.rightA,b.rightB,R,solved);
+
+  // particles
+  if(brParts.length){ let alive=false;
+    for(const p of brParts){ p.x+=p.vx;p.y+=p.vy;p.vy+=0.06;p.life-=0.02; if(p.life>0){alive=true; brctx.globalAlpha=Math.max(0,p.life); brctx.fillStyle=p.col; brctx.beginPath(); brctx.arc(p.x,p.y,p.r,0,7); brctx.fill();} }
+    brctx.globalAlpha=1; if(!alive) brParts=[]; }
+}
+function drawPan(ex,ey,a,bWeight,total,solved){
+  const S=brPx, drop=S*0.13, top=ey+drop, bw=S*0.24, bh=S*0.10, boxW=S*0.045;
+  // chains
+  brctx.strokeStyle='rgba(210,220,240,.5)'; brctx.lineWidth=2;
+  brctx.beginPath(); brctx.moveTo(ex,ey); brctx.lineTo(ex-bw*0.36,top); brctx.moveTo(ex,ey); brctx.lineTo(ex+bw*0.36,top); brctx.stroke();
+  // basket
+  brctx.fillStyle='#3a2568'; brctx.strokeStyle='#160f22'; brctx.lineWidth=3;
+  brctx.beginPath(); brctx.moveTo(ex-bw/2,top); brctx.lineTo(ex+bw/2,top); brctx.lineTo(ex+bw*0.38,top+bh); brctx.lineTo(ex-bw*0.38,top+bh); brctx.closePath(); brctx.fill(); brctx.stroke();
+  // crate boxes
+  const boxes=Math.min(a,3); const groupW=boxes*(boxW+3)+(bWeight>0?boxW*1.3+6:0);
+  let sx=ex-groupW/2; brctx.textAlign='center'; brctx.textBaseline='middle';
+  for(let i=0;i<boxes;i++){ const bxp=sx+i*(boxW+3);
+    brctx.fillStyle='#ffca4d'; brctx.strokeStyle='#160f22'; brctx.lineWidth=2.5; rrectBR(bxp,top-boxW-2,boxW,boxW,3); brctx.fill(); brctx.stroke();
+    brctx.fillStyle='#160f22'; brctx.font='900 '+Math.round(boxW*0.72)+'px system-ui'; brctx.fillText('x',bxp+boxW/2,top-boxW/2-2);
+  }
+  let after=sx+boxes*(boxW+3);
+  if(a>3){ brctx.fillStyle='#fff7ea'; brctx.font='800 '+Math.round(S*0.028)+'px system-ui'; brctx.fillText('×'+a, ex, top-boxW*1.7); }
+  if(bWeight>0){ brctx.fillStyle='#25e3ff'; brctx.strokeStyle='#160f22'; brctx.lineWidth=2.5; rrectBR(after,top-boxW-2,boxW*1.3,boxW,4); brctx.fill(); brctx.stroke();
+    brctx.fillStyle='#160f22'; brctx.font='900 '+Math.round(boxW*0.6)+'px system-ui'; brctx.fillText('+'+bWeight, after+boxW*0.65, top-boxW/2-2); }
+  // total
+  brctx.fillStyle= solved?'#8bff5a':'#fff7ea'; brctx.font='900 '+Math.round(S*0.062)+'px system-ui';
+  brctx.fillText(total, ex, top+bh+S*0.05);
+}
+
+let brToastGuard=null;
+function winBridge(){
+  if(BR.solvedNow) return; BR.solvedNow=true;
+  const secs=(Date.now()-BR.startTime)/1000, fast=secs<70;
+  if(fast && !BR.hintUsed) G.levels.bridge=Math.min(8,G.levels.bridge+2);
+  else if(!BR.hintUsed) G.levels.bridge=Math.min(8,G.levels.bridge+1);
+  else G.levels.bridge=Math.max(1,G.levels.bridge-1);
+  const gained=claimFeat('bridge', FEATS[4].reward);
+  updateBridgeHUD(); bridgeBurst();
+  const allDone = Object.keys(G.claimed).length>=FEATS.length;
+  $('win-title').textContent = allDone ? 'BASE COMPLETE!' : 'Bridge Rebuilt!';
+  $('win-flag').innerHTML=icon('bridge');
+  $('win-msg').textContent = allDone
+    ? 'Every hideout is cleared — the whole base is yours. You rebuilt the world, hero!'
+    : 'The counterweights match — the planks slam down and the bridge holds!';
+  $('win-reward').textContent='+'+gained+' salvage';
+  setTimeout(()=>$('win-overlay').classList.add('show'), 500);
+}
+function bridgeBurst(){ const cols=['#8bff5a','#25e3ff','#ffd21e','#ff3ea5','#ffffff']; brParts=[];
+  for(let i=0;i<26;i++) brParts.push({ x:brPx/2, y:brPx*0.45, vx:(Math.random()-.5)*9, vy:(Math.random()-.5)*9, life:1, r:2+Math.random()*3, col:cols[i%cols.length] });
+  if(!brAnimRAF) startBridgeAnim();
+}
+function bridgeHint(){
+  if(BR.solvedNow) return; const b=BR.board; BR.hintUsed=true;
+  if(b.guess<b.x) toast('The bridge dips right — make each crate heavier!');
+  else if(b.guess>b.x) toast('The bridge dips left — make each crate lighter!');
+  else toast('It is balanced — nice work!');
+}
+$('br-back').onclick =()=>{ stopBridgeAnim(); show('map-screen'); renderMap(); };
+$('br-reset').onclick=()=>{ if(BR.solvedNow) return; BR.board.guess=1; renderBridgeControls(); updateBridgeHUD(); updateBridgeNow(); };
+$('br-hint').onclick =bridgeHint;
+$('br-new').onclick  =()=>startBridge();
+
 // ---------- boot ----------
 // Small public namespace (also handy for automated testing).
 window.FOAS = { makePuzzle, buildCandidate, isSolved, optimalMoves, computePower, config,
                 buildBeacon, runBeaconProgram, solveBeacon, countBlocks, beaconConfig,
                 buildWell, wellSolved, wellOptimal, wellConfig,
-                buildVault, vaultFeedback, vaultConfig };
-window.addEventListener('resize', ()=>{ fitCanvas(); fitBeacon(); fitWell(); });
+                buildVault, vaultFeedback, vaultConfig,
+                buildBridge, bridgeLeft, bridgeRight, bridgeSolved };
+window.addEventListener('resize', ()=>{ fitCanvas(); fitBeacon(); fitWell(); fitBridge(); });
 paintIcons();      // fill all static [data-ic] placeholders with vector icons
 loadProgress();
 renderMap();

@@ -2,10 +2,11 @@
 
 An installable web game for an advanced young learner. Rebuild a ruined world
 one **Feat** at a time by solving logic puzzles that stretch spatial reasoning
-and planning — wrapped in a bold "explorer at dusk" adventure. This build has **four** fully playable Feats — **"Claim the Castle"**
+and planning — wrapped in a bold "explorer at dusk" adventure. This build has **all five** Feats fully playable — **"Claim the Castle"**
 (power-routing), **"Light the Beacon"** (block coding), **"Purify the Well"**
-(fractions & ratios), and **"Crack the Vault"** (deduction / code-breaking) — plus
-the world-map, salvage, and adaptive-difficulty shell the last Feat will slot into.
+(fractions & ratios), **"Crack the Vault"** (deduction / code-breaking), and
+**"Rebuild the Bridge"** (balance algebra) — a complete campaign, with the
+world-map, salvage, and per-Feat adaptive difficulty tying it together.
 
 **Art direction — comic-book "kid-built fort vs. goop-monsters."** A high-energy
 middle-grade graphic-novel look (think *Last Kids on Earth*): bold ink outlines,
@@ -93,6 +94,13 @@ symbol code; after each try, feedback pips tell her how close she is (**green** 
 right symbol in the right slot, **yellow** = right symbol in the wrong slot), and
 she narrows it down by logic. Symbols are double-encoded by colour *and* shape, so
 it's colourblind-friendly. Crack it to swing the bunker doors open.
+
+**Rebuild the Bridge** — A balance-scale algebra puzzle: the bridge's counterweight
+crates each weigh an unknown amount, and she turns a dial to find it. The scale
+tilts live toward the heavier side and shows both side-totals, so an equation like
+"2 crates + 3 must equal 1 crate + 8" becomes something she can *see* balance —
+early solving-for-x. Balance it and the planks slam down. Clearing it completes the
+whole base.
 
 All Feats have no lives, no timers, and no way to lose, and each has its own
 adaptive challenge level that rises automatically the faster and cleaner she
