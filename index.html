@@ -156,7 +156,7 @@
   .blk.turn{ background:linear-gradient(180deg,#7fe0ff,#1fa7cf); }
   .blk.loop{ background:linear-gradient(180deg,#ffe08a,var(--amber)); }
   .blk.cond{ background:linear-gradient(180deg,#e3b6ff,#a05fe0); color:#fff; }
-  .program{ padding:10px; border-radius:14px; min-height:60px; border:1px solid var(--line); box-shadow: inset 0 0 20px rgba(0,0,0,.5);
+  .program{ padding:10px; border-radius:14px; min-height:60px; max-height:46vh; overflow-y:auto; border:1px solid var(--line); box-shadow: inset 0 0 20px rgba(0,0,0,.5);
     background:repeating-linear-gradient(180deg, rgba(0,0,0,.26), rgba(0,0,0,.26) 22px, rgba(0,0,0,.33) 22px, rgba(0,0,0,.33) 44px); }
   .program.empty::before{ content:"Tap blocks above to build your program…"; color:var(--muted); font-size:13px; }
   .pblk{ display:flex; align-items:center; gap:8px; padding:10px 12px; margin:6px 0; font-weight:800; border-radius:11px;
@@ -356,14 +356,13 @@
 
     <div class="code-wrap">
       <div class="palette" id="b-palette"></div>
+      <div class="controls" style="margin:4px 0 10px;">
+        <button class="btn" id="b-clear"><span data-ic="trash"></span> Clear</button>
+        <button class="btn" id="b-hint"><span data-ic="spark"></span> Hint</button>
+        <button class="btn primary" id="b-run"><span data-ic="play"></span> Run</button>
+      </div>
       <div class="ctx-hint" id="b-ctx" style="display:none"></div>
       <div class="program empty" id="b-program"></div>
-    </div>
-
-    <div class="controls" style="margin-top:10px;">
-      <button class="btn" id="b-clear"><span data-ic="trash"></span> Clear</button>
-      <button class="btn" id="b-hint"><span data-ic="spark"></span> Hint</button>
-      <button class="btn primary" id="b-run"><span data-ic="play"></span> Run</button>
     </div>
   </section>
 
@@ -1188,7 +1187,7 @@ function addBlock(op){
 function renderProgram(){
   const host=$('b-program'); host.innerHTML='';
   host.classList.toggle('empty', B.program.length===0);
-  renderList(B.program, host);
+  renderList(B.program, host, true);   // newest-tapped block shows at the top
   const ctx=$('b-ctx');
   if(B.activeBody!==B.program){
     ctx.style.display='block';
@@ -1197,8 +1196,10 @@ function renderProgram(){
   } else ctx.style.display='none';
 }
 
-function renderList(list, host){
-  list.forEach((ins,idx)=>{
+function renderList(list, host, reverse){
+  for(let k=0;k<list.length;k++){
+    const idx = reverse ? (list.length-1-k) : k;
+    const ins = list[idx];
     if(ins.op==='repeat' || ins.op==='ifClear'){
       const isRepeat = ins.op==='repeat';
       const wrap=document.createElement('div'); wrap.className='pblk block'+(isRepeat?'':' cond');
@@ -1220,7 +1221,7 @@ function renderList(list, host){
 
       const body=document.createElement('div'); body.className='body'+(B.activeBody===ins.body?' active':'');
       body.onclick=(e)=>{ if(e.target===body && !B.running){ B.activeBody=ins.body; renderProgram(); } };
-      renderList(ins.body, body);
+      renderList(ins.body, body, false);
       if(ins.body.length===0){ const ph=document.createElement('div'); ph.className='ctx-hint'; ph.style.margin='2px'; ph.textContent = (B.activeBody===ins.body?'▲ adding here':'tap to add inside'); body.appendChild(ph); }
       wrap.appendChild(body);
       host.appendChild(wrap);
@@ -1231,7 +1232,7 @@ function renderList(list, host){
       del.onclick=()=>{ if(B.running)return; list.splice(idx,1); renderProgram(); updateBeaconHUD(); };
       el.append(t, del); host.appendChild(el);
     }
-  });
+  }
 }
 
 // ---- beacon rendering ----

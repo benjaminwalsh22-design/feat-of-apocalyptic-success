@@ -1,6 +1,6 @@
 /* Service worker: makes the game load instantly and work fully offline
    once it's been opened once. Bump CACHE when you change the game. */
-const CACHE = 'foas-v6';
+const CACHE = 'foas-v7';
 const ASSETS = [
   './', 'index.html', 'manifest.webmanifest',
   'icon-180.png', 'icon-192.png', 'icon-512.png', 'icon-512-maskable.png'
