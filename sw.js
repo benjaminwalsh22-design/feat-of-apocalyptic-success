@@ -1,6 +1,6 @@
 /* Service worker: makes the game load instantly and work fully offline
    once it's been opened once. Bump CACHE when you change the game. */
-const CACHE = 'foas-v12';
+const CACHE = 'foas-v13';
 const ASSETS = [
   './', 'index.html', 'manifest.webmanifest',
   'icon-180.png', 'icon-192.png', 'icon-512.png', 'icon-512-maskable.png'
@@ -20,11 +20,24 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  const req = e.request;
+  // Treat page navigations / HTML as network-first so a fresh build always
+  // shows up when online; fall back to cache only when offline.
+  const isNav = req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
+  if (isNav) {
+    e.respondWith(
+      fetch(req)
+        .then(resp => { const copy = resp.clone(); caches.open(CACHE).then(c => c.put('index.html', copy)); return resp; })
+        .catch(() => caches.match('index.html').then(r => r || caches.match('./')))
+    );
+    return;
+  }
+  // Other assets: cache-first, then fill the cache in the background.
   e.respondWith(
-    caches.match(e.request).then(cached =>
-      cached || fetch(e.request).then(resp => {
+    caches.match(req).then(cached =>
+      cached || fetch(req).then(resp => {
         const copy = resp.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copy));
+        caches.open(CACHE).then(c => c.put(req, copy));
         return resp;
       }).catch(() => caches.match('index.html'))
     )

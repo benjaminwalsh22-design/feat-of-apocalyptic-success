@@ -2714,9 +2714,25 @@ Sound.load();
 loadProgress();
 renderMap();
 
-// Offline support: register the service worker (no-op on file:// or http).
+// Build tag — tiny corner label so you can confirm which version a device is running.
+const BUILD='v13';
+(function(){ const v=document.createElement('div'); v.textContent='build '+BUILD;
+  v.style.cssText='position:fixed;right:6px;bottom:5px;font:600 10px system-ui;color:rgba(255,255,255,.28);z-index:60;pointer-events:none;';
+  document.body.appendChild(v); })();
+
+// Offline support + robust auto-update: register the service worker (no-op on file://).
 if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+  // When a new service worker takes control, reload once so fresh content shows immediately.
+  let refreshing=false;
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{ if(refreshing) return; refreshing=true; window.location.reload(); });
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js', { updateViaCache:'none' }).then(reg=>{
+      reg.update();
+      // Check for a new build each time the app is reopened/refocused, and hourly while open.
+      document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') reg.update(); });
+      setInterval(()=>reg.update(), 60*60*1000);
+    }).catch(()=>{});
+  });
 }
 </script>
 </body>
