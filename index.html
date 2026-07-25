@@ -129,7 +129,7 @@
   .stat .v{ font-weight:900; font-size:17px; }
   .stat .l{ font-size:9px; letter-spacing:.4px; color:var(--muted); text-transform:uppercase; }
 
-  #board,#b-board,#w-board,#br-board,#l-board,#d-board{ display:block; margin:0 auto; border-radius:18px; touch-action:none;
+  #board,#b-board,#w-board,#br-board,#l-board,#d-board,#rc-board{ display:block; margin:0 auto; border-radius:18px; touch-action:none;
     background:#0b1620; border:1px solid rgba(120,200,190,.18);
     box-shadow: inset 0 0 30px rgba(0,0,0,.5), 0 8px 20px rgba(0,0,0,.4); }
   .hint-line{ text-align:center; color:var(--muted); font-size:13px; margin:11px 8px 12px; line-height:1.45; }
@@ -272,7 +272,7 @@
   .hud .stat .i{ color:var(--cyan); }
   .hud .stat .v{ font-family:system-ui,-apple-system,"Arial Black","Segoe UI",sans-serif; font-weight:900; -webkit-text-stroke:.5px var(--outline); paint-order:stroke fill; }
 
-  #board,#b-board,#w-board,#br-board,#l-board,#d-board{ border:3px solid var(--outline); border-radius:16px; background:#1a1030; box-shadow:5px 6px 0 var(--outline); }
+  #board,#b-board,#w-board,#br-board,#l-board,#d-board,#rc-board{ border:3px solid var(--outline); border-radius:16px; background:#1a1030; box-shadow:5px 6px 0 var(--outline); }
 
   .blk{ border:3px solid var(--outline); color:var(--outline); box-shadow:0 4px 0 var(--outline); border-radius:12px; text-transform:uppercase; font-weight:800; }
   .blk.move{ background:var(--moss);} .blk.turn{ background:var(--cyan);} .blk.loop{ background:var(--gold);} .blk.cond{ background:var(--pink); color:var(--outline);}
@@ -401,6 +401,30 @@
       <button class="btn" id="d-reset"><span data-ic="reset"></span> Restart</button>
       <button class="btn" id="d-hint"><span data-ic="spark"></span> Auto-Run</button>
       <button class="btn" id="d-new"><span data-ic="grid"></span> New Route</button>
+    </div>
+  </section>
+
+  <!-- ============ GOO-KART SCREEN (racing) ============ -->
+  <section id="race-screen" class="screen">
+    <div class="topbar">
+      <button class="back" id="rc-back"><span data-ic="back"></span> Map</button>
+      <div class="title">Scrapyard Speedway</div>
+    </div>
+    <div class="hud metal">
+      <div class="stat"><div class="i" data-ic="flag"></div><div class="v" id="rc-lap">1/3</div><div class="l">Lap</div></div>
+      <div class="stat"><div class="i" data-ic="target"></div><div class="v" id="rc-place">1st</div><div class="l">Place</div></div>
+      <div class="stat"><div class="i" data-ic="bars"></div><div class="v" id="rc-level">Lv 1</div><div class="l">Challenge</div></div>
+      <div class="stat"><div class="i" data-ic="crate"></div><div class="v" id="rc-salvage">0</div><div class="l">Salvage</div></div>
+    </div>
+
+    <canvas id="rc-board" width="480" height="480"></canvas>
+
+    <div class="hint-line">Hold the <b>left</b> or <b>right</b> side of the track to steer — ride the <b>boost arrows</b>, skip the grass, beat the goo-karts!</div>
+
+    <div class="controls" style="margin-top:10px;">
+      <button class="btn" id="rc-reset"><span data-ic="reset"></span> Restart</button>
+      <button class="btn" id="rc-hint"><span data-ic="spark"></span> Auto-Drive</button>
+      <button class="btn" id="rc-new"><span data-ic="grid"></span> New Track</button>
     </div>
   </section>
 
@@ -765,7 +789,7 @@ const FLAG_COST = 40;
 
 const G = {
   salvage:0,
-  levels:{ castle:1, beacon:1, well:1, vault:1, bridge:1 },   // adaptive difficulty per feat
+  levels:{ castle:1, beacon:1, well:1, vault:1, bridge:1, race:1 },   // adaptive difficulty per feat
   claimed:{},                       // { castle:true, beacon:true, ... }
   unlockedFlags:[0], selFlag:0,
   lastFeat:'castle',
@@ -777,9 +801,9 @@ function loadProgress(){
   G.salvage = s.salvage||0;
   // per-feat levels (migrate from an older single-level save)
   if(s.levels && typeof s.levels==='object'){
-    G.levels = { castle:s.levels.castle||1, beacon:s.levels.beacon||1, well:s.levels.well||1, vault:s.levels.vault||1, bridge:s.levels.bridge||1 };
+    G.levels = { castle:s.levels.castle||1, beacon:s.levels.beacon||1, well:s.levels.well||1, vault:s.levels.vault||1, bridge:s.levels.bridge||1, race:s.levels.race||1 };
   } else {
-    G.levels = { castle:s.level||1, beacon:1, well:1, vault:1, bridge:1 };
+    G.levels = { castle:s.level||1, beacon:1, well:1, vault:1, bridge:1, race:1 };
   }
   // claimed set (migrate from an older boolean save)
   if(s.claimed && typeof s.claimed==='object') G.claimed = {...s.claimed};
@@ -822,7 +846,10 @@ const FEATS=[
    skill:'Deduction · Hypothesis Testing'},
   {id:'bridge', title:'Junkyard Dash', icon:'🏃', playable:true, reward:70,
    desc:'Sprint across the junkyard — jump the wrecks, duck the pipes, grab gems and power-ups, reach the bridge!',
-   skill:'Reflexes · Timing & Spatial Focus'}
+   skill:'Reflexes · Timing & Spatial Focus'},
+  {id:'race', title:'Goo-Kart Grand Prix', icon:'🏎', playable:true, reward:80,
+   desc:'Race goop-monster karts around the scrapyard speedway — hit the boost pads, hold the racing line, take the checkered flag!',
+   skill:'Racing Lines · Steering & Timing'}
 ];
 
 // ---------- overworld map ----------
@@ -831,16 +858,18 @@ const REGIONS = {
   beacon:{ name:'Lookout Tower',   tint:'#25e3ff' },
   well:{   name:'Overgrown Mall',  tint:'#8bff5a' },
   vault:{  name:'Bunker Vault',    tint:'#b98bff' },
-  bridge:{ name:'Junkyard Bridge', tint:'#ff7a1a' }
+  bridge:{ name:'Junkyard Bridge', tint:'#ff7a1a' },
+  race:{   name:'Scrapyard Speedway', tint:'#ff3ea5' }
 };
-const NODEPOS = [ [258,96],[104,224],[256,352],[110,486],[250,616] ];
-const VW=360, VH=712;
+const NODEPOS = [ [258,96],[104,224],[256,352],[110,486],[250,616],[128,792] ];
+const VW=360, VH=862;
 const EMBLEM = {
   castle: '<path d="M6 10a6 6 0 0 1 12 0 6 6 0 0 1-.7 2.8H6.7A6 6 0 0 1 6 10z"/><path d="M8 12h8v6H8z"/><path d="M7.4 12L12 8l4.6 4z"/><rect x="11" y="18" width="2" height="4"/>',
   beacon: '<path d="M9 21l1-11h4l1 11z"/><path d="M8 10h8l-2-5h-4z"/><rect x="10.6" y="12" width="2.8" height="3"/>',
   well:  '<path d="M8 8h8l-1.2 12H9.2z"/><path d="M9 8l.8-3h4.4l.8 3z"/><rect x="13" y="3" width="1.6" height="7" rx=".8"/>',
   vault: ICONS.lock,
-  bridge:'<path d="M2 15c5-7 15-7 20 0" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M2 15v5M22 15v5M8 12.5v7.5M16 12.5v7.5M12 11v9" stroke="currentColor" stroke-width="1.7" fill="none"/>'
+  bridge:'<path d="M2 15c5-7 15-7 20 0" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M2 15v5M22 15v5M8 12.5v7.5M16 12.5v7.5M12 11v9" stroke="currentColor" stroke-width="1.7" fill="none"/>',
+  race:'<path d="M5 3h2v18H5z"/><path d="M7 4h12v10H7z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 4h4v3.3h-4zM11 7.3h4v3.4h-4zM15 4h4v3.3h-4zM7 10.7h4V14H7zM15 10.7h4V14h-4z"/>'
 };
 function nodeUnlocked(idx){ return idx===0 || !!G.claimed[FEATS[idx-1].id]; }
 
@@ -953,6 +982,14 @@ function landmark(id){
     <path d="M-20 10 Q0 -12 20 10" stroke="#8a5a2b" stroke-width="7" fill="none" stroke-linecap="round"/>
     <path d="M-13 4 l0 6 M-6 -1 l0 6 M1 -3 l0 6 M8 -1 l0 6 M14 4 l0 6" stroke-width="1.5" fill="none"/>
     <rect x="-23" y="9" width="4" height="13" rx="1" fill="#6b431f" stroke-width="2"/><rect x="19" y="9" width="4" height="13" rx="1" fill="#6b431f" stroke-width="2"/></g>`;
+  if(id==='race') return `<g stroke="#160f22">
+    <ellipse cx="0" cy="8" rx="23" ry="12" fill="#4a4458" stroke-width="3.5"/>
+    <ellipse cx="0" cy="8" rx="11" ry="5" fill="#2f5a3b" stroke-width="2.5"/>
+    <path d="M-22 8 a22 11 0 0 1 44 0" fill="none" stroke="#ffd21e" stroke-width="1.6" stroke-dasharray="4 5"/>
+    <g transform="translate(13,-4) rotate(14)"><rect x="-6" y="-3" width="12" height="6" rx="2.5" fill="#e64d52" stroke-width="2"/>
+      <circle cx="-4" cy="3.4" r="2.2" fill="#26262f" stroke-width="1.6"/><circle cx="4" cy="3.4" r="2.2" fill="#26262f" stroke-width="1.6"/></g>
+    <rect x="-1" y="-26" width="2" height="14" fill="#160f22"/>
+    <g transform="translate(1,-26)"><rect width="5" height="4" fill="#fff"/><rect x="5" width="5" height="4" fill="#160f22"/><rect y="4" width="5" height="4" fill="#160f22"/><rect x="5" y="4" width="5" height="4" fill="#fff"/><rect x="-0.5" y="-0.5" width="11" height="9" fill="none" stroke="#160f22" stroke-width="1.4"/></g></g>`;
   return '';
 }
 
@@ -975,9 +1012,10 @@ function buildOverworld(){
   // halftone
   let dots=''; for(let gy=8; gy<VH; gy+=18){ for(let gx=((((gy/18)|0)%2)*9)+6; gx<VW; gx+=18){ dots+=`<circle cx="${gx}" cy="${gy}" r="1.1" fill="#fff" opacity="0.04"/>`; } }
   p.push(dots);
-  // water / chasm at bottom (under the Bridge)
-  p.push(`<path d="M0 ${VH-72} Q ${VW/2} ${VH-112} ${VW} ${VH-72} L ${VW} ${VH} L 0 ${VH} Z" fill="#173a4a" stroke="#0f2733" stroke-width="3"/>`);
-  p.push(`<path d="M0 ${VH-70} Q ${VW/2} ${VH-110} ${VW} ${VH-70}" fill="none" stroke="#2b6f7a" stroke-width="2" opacity=".6"/>`);
+  // river / chasm just past the Bridge — the road to the Speedway crosses it
+  p.push(`<path d="M0 668 Q ${VW/2} 628 ${VW} 668 L ${VW} 722 Q ${VW/2} 684 0 722 Z" fill="#173a4a" stroke="#0f2733" stroke-width="3"/>`);
+  p.push(`<path d="M0 666 Q ${VW/2} 626 ${VW} 666" fill="none" stroke="#2b6f7a" stroke-width="2" opacity=".6"/>`);
+  p.push(`<path d="M40 690 q10 -5 20 0 M240 700 q10 -5 20 0 M140 682 q9 -4 18 0" fill="none" stroke="#2b6f7a" stroke-width="2" opacity=".5"/>`);
 
   // roads
   for(let i=0;i<FEATS.length-1;i++){
@@ -992,7 +1030,8 @@ function buildOverworld(){
   // scenery
   p.push([spriteTree(38,150,1.1),spriteTree(322,170,1.0),spriteBush(58,300,1.2),spriteTree(305,440,1.15),
     spriteBush(300,300,1.1),spriteScrap(48,470,1.1),spriteBush(196,150,1.0),spriteScrap(316,560,1.0),
-    spriteGoo(184,250,1.1),spriteGoo(58,560,1.2),spriteBush(160,470,1.0),spriteTree(64,650,1.0),spriteBush(310,660,1.0)].join(''));
+    spriteGoo(184,250,1.1),spriteGoo(58,560,1.2),spriteBush(160,470,1.0),spriteTree(52,632,1.0),spriteBush(310,650,1.0),
+    spriteTree(318,772,1.05),spriteBush(60,742,1.1),spriteScrap(296,832,1.05),spriteGoo(232,838,1.0),spriteBush(190,748,0.95)].join(''));
 
   // goop monsters — a few scattered, more guarding locked hideouts
   let mi=0; const mon=[];
@@ -1029,8 +1068,8 @@ function buildOverworld(){
     p.push(g);
   });
 
-  // BOSS goop-blob guarding the final bridge (until it's cleared)
-  if(!G.claimed['bridge']) p.push(spriteBoss(130, 636));
+  // BOSS goop-blob guarding the final speedway (until it's cleared)
+  if(!G.claimed['race']) p.push(spriteBoss(262, 800));
 
   // hero avatar at the current objective
   let obj=FEATS.findIndex((f,i)=>nodeUnlocked(i) && !G.claimed[f.id]);
@@ -1050,6 +1089,7 @@ function buildOverworld(){
       else if(f.id==='well') startWell();
       else if(f.id==='vault') startVault();
       else if(f.id==='bridge') startDash();
+      else if(f.id==='race') startRace();
     });
   });
   // poke a goop-monster (or the boss) → squish sound + squash
@@ -1286,7 +1326,7 @@ $('hint-btn').onclick=()=>{
 };
 $('new-btn').onclick=()=>{ startGame(); };
 $('back-btn').onclick=()=>{ stopFlow(); show('map-screen'); renderMap(); };
-$('win-again').onclick=()=>{ $('win-overlay').classList.remove('show'); ({castle:startLaunch,beacon:startBeacon,well:startWell,vault:startVault,bridge:startDash}[G.lastFeat]||startGame)(); };
+$('win-again').onclick=()=>{ $('win-overlay').classList.remove('show'); ({castle:startLaunch,beacon:startBeacon,well:startWell,vault:startVault,bridge:startDash,race:startRace}[G.lastFeat]||startGame)(); };
 $('win-map').onclick=()=>{ $('win-overlay').classList.remove('show'); show('map-screen'); renderMap(); };
 
 // ---------- add-to-home-screen hint ----------
@@ -2695,6 +2735,308 @@ window.addEventListener('keydown', e=>{ if(!$('dash-screen').classList.contains(
   else if(e.code==='ArrowDown'){ DA.auto=false; DA.duckHeld=true; e.preventDefault(); } });
 window.addEventListener('keyup', e=>{ if(e.code==='ArrowDown') DA.duckHeld=false; });
 
+// =====================================================================
+//  FEAT 6 — Goo-Kart Grand Prix (Scrapyard Speedway)
+//  Top-down kart racing: auto-throttle, hold left/right to steer, boost
+//  pads, grass slows you, goop-monster rival karts with gentle rubber-band.
+//  One deterministic fixed-step model drives play, Auto-Drive, and the
+//  build-time verify — every generated track is proven raceable.
+// =====================================================================
+const RC_DT=1/120, RC_TURN=3.6, RC_ACC=0.30, RC_GRASS=0.38, RC_BOOSTX=1.38, RC_N=280;
+function rcMaxSpd(level){ return 0.145 + Math.max(1,Math.min(8,level))*0.007; }
+function rcConfig(level){
+  const l=Math.max(1,Math.min(8,level));
+  return { laps: l<=2?2:3, ais: l<=3?2:3, aiFrac: 0.72+l*0.031, width: 0.115-(l-1)*0.004, wob: 0.03+(l-1)*0.004 };
+}
+// Track: single-valued polar loop -> guaranteed simple closed curve.
+function rcCurve(cx,cy,base,a1,p1,a2,p2,th){ const r=base+a1*Math.sin(2*th+p1)+a2*Math.sin(3*th+p2); return [cx+Math.cos(th)*r, cy+Math.sin(th)*r]; }
+function buildRace(level){
+  const cfg=rcConfig(level), R=Math.random;
+  for(let attempt=0; attempt<60; attempt++){
+    const cx=0.5, cy=0.52, base=0.30;
+    const a1=cfg.wob*(0.7+R()*0.6), p1=R()*6.28, a2=cfg.wob*0.7*(0.6+R()*0.8), p2=R()*6.28;
+    const cl=[]; for(let i=0;i<RC_N;i++){ cl.push(rcCurve(cx,cy,base,a1,p1,a2,p2, i/RC_N*Math.PI*2)); }
+    // boost pads + gems along the loop
+    const pads=[]; const np=2+(level>=4?1:0);
+    for(let k=0;k<np;k++) pads.push({ idx: Math.floor((0.15+k/np)*RC_N + R()*RC_N*0.1) % RC_N });
+    const gems=[]; for(let k=0;k<9;k++){ const gi=Math.floor(R()*RC_N);
+      if(!pads.some(pd=>Math.abs(pd.idx-gi)<10)) gems.push({ idx:gi, off:(R()-0.5)*cfg.width*0.7 }); }
+    const ais=[]; for(let k=0;k<cfg.ais;k++) ais.push({ off:(k-(cfg.ais-1)/2)*0.024, spd: rcMaxSpd(level)*cfg.aiFrac*(1+k*0.012) });
+    const world={ level, laps:cfg.laps, width:cfg.width, cl, pads, gems, ais };
+    const sim=simulateRace(world);
+    if(sim.finished && sim.secs < 40*cfg.laps) return world;
+  }
+  // ultra-safe fallback: near-circle
+  const cl=[]; for(let i=0;i<RC_N;i++) cl.push(rcCurve(0.5,0.52,0.30,0.015,0,0.01,1, i/RC_N*Math.PI*2));
+  return { level, laps:2, width:0.12, cl, pads:[{idx:70},{idx:210}], gems:[{idx:35,off:0},{idx:140,off:0},{idx:245,off:0}],
+           ais:[{off:-0.012,spd:rcMaxSpd(level)*0.75},{off:0.012,spd:rcMaxSpd(level)*0.78}] };
+}
+function rcTangent(cl,i){ const a=cl[(i+RC_N-1)%RC_N], b=cl[(i+1)%RC_N]; return Math.atan2(b[1]-a[1], b[0]-a[0]); }
+function rcNear(cl, x, y, hint){
+  let best=hint, bd=1e9;
+  for(let d=-14; d<=14; d++){ const i=(hint+d+RC_N)%RC_N, p=cl[i], dx=x-p[0], dy=y-p[1], q=dx*dx+dy*dy;
+    if(q<bd){ bd=q; best=i; } }
+  return { i:best, dist:Math.sqrt(bd) };
+}
+function newRaceState(w){
+  const s=cl0(w);
+  return { x:s[0], y:s[1], ang:rcTangent(w.cl,0), spd:0, prog:0, lastI:0,
+    cd:2.8, boostT:0, offT:0, gems:0, got:new Set(), done:false, place:1, phase:0,
+    ais: w.ais.map(a=>({ prog:0, fin:false })), aiFin:0, trail:[] };
+}
+function cl0(w){ return w.cl[0]; }
+// One deterministic step — shared by live play, Auto-Drive, and verify.
+function stepRace(st, w, act){
+  st.phase+=RC_DT;
+  if(st.cd>0){ st.cd-=RC_DT; return; }
+  if(st.done) return;
+  // steering
+  if(act.left)  st.ang-=RC_TURN*RC_DT;
+  if(act.right) st.ang+=RC_TURN*RC_DT;
+  // throttle toward cap
+  const near=rcNear(w.cl, st.x, st.y, st.lastI);
+  const onTrack=near.dist <= w.width/2;
+  if(!onTrack) st.offT+=RC_DT;
+  if(st.boostT>0) st.boostT-=RC_DT;
+  const cap=rcMaxSpd(w.level)*(onTrack?1:RC_GRASS)*(st.boostT>0?RC_BOOSTX:1);
+  st.spd += (cap-st.spd)*Math.min(1, (cap>st.spd?2.6:5.2)*RC_DT);
+  st.x += Math.cos(st.ang)*st.spd*RC_DT;
+  st.y += Math.sin(st.ang)*st.spd*RC_DT;
+  // progress (window-tracked so it can't skip across the infield)
+  let delta=((near.i-st.lastI+RC_N/2+RC_N)%RC_N)-RC_N/2;
+  st.prog+=delta; st.lastI=near.i;
+  // boost pads
+  for(const pd of w.pads){ const p=w.cl[pd.idx], dx=st.x-p[0], dy=st.y-p[1];
+    if(dx*dx+dy*dy < 0.0016) st.boostT=1.15; }
+  // gems
+  for(let gi=0; gi<w.gems.length; gi++){ if(st.got.has(gi)) continue; const g=w.gems[gi];
+    const i=g.idx, t=rcTangent(w.cl,i), p=w.cl[i], gx=p[0]+Math.cos(t+Math.PI/2)*g.off, gy=p[1]+Math.sin(t+Math.PI/2)*g.off;
+    const dx=st.x-gx, dy=st.y-gy; if(dx*dx+dy*dy<0.0011){ st.got.add(gi); st.gems++; } }
+  // rival karts follow the centerline with gentle rubber-band
+  for(let k=0;k<w.ais.length;k++){ const ai=st.ais[k]; if(ai.fin) continue;
+    const lead=ai.prog-st.prog;
+    const band = lead>RC_N*0.5 ? 0.90 : (lead<-RC_N*0.5 ? 1.08 : 1);
+    ai.prog += (w.ais[k].spd*band)/laplen(w)*RC_N*RC_DT;
+    if(ai.prog>=w.laps*RC_N){ ai.fin=true; st.aiFin++; } }
+  st.place=1+st.aiFin;
+  if(st.prog>=w.laps*RC_N) st.done=true;
+}
+let _lapCache=new WeakMap();
+function laplen(w){ let L=_lapCache.get(w); if(L) return L; L=0;
+  for(let i=0;i<RC_N;i++){ const a=w.cl[i], b=w.cl[(i+1)%RC_N]; L+=Math.hypot(b[0]-a[0],b[1]-a[1]); }
+  _lapCache.set(w,L); return L; }
+// Auto-Drive: chase a look-ahead point on the centerline. Also the verify oracle.
+function raceAuto(st, w){
+  const look=(st.lastI+9)%RC_N, p=w.cl[look];
+  let want=Math.atan2(p[1]-st.y, p[0]-st.x), d=want-st.ang;
+  while(d>Math.PI) d-=Math.PI*2; while(d<-Math.PI) d+=Math.PI*2;
+  return { left:d<-0.03, right:d>0.03 };
+}
+function simulateRace(w){
+  const st=newRaceState(w);
+  const maxSteps=Math.ceil((45*w.laps+5)/RC_DT);
+  for(let s=0;s<maxSteps;s++){ stepRace(st, w, raceAuto(st,w)); if(st.done) return {finished:true, secs:s*RC_DT, place:st.place}; }
+  return {finished:false, secs:maxSteps*RC_DT, place:st.place};
+}
+
+// ---- controller ----
+const RA={ world:null, st:null, running:false, auto:false, finished:false,
+  left:false, right:false, acc:0, lastT:0, conf:[] };
+const rcanvas=$('rc-board'), rcctx=rcanvas.getContext('2d');
+let rcPx=480, rcAnimRAF=null;
+
+function startRace(){
+  G.lastFeat='race';
+  RA.world=buildRace(G.levels.race); RA.st=newRaceState(RA.world);
+  RA.running=true; RA.auto=false; RA.finished=false; RA.left=false; RA.right=false; RA.acc=0; RA.conf=[];
+  RA.lastT=performance.now();
+  show('race-screen'); fitRace(); updateRaceHUD(); startRaceAnim();
+}
+function fitRace(){
+  const size=Math.min(window.innerWidth-32,520), dpr=window.devicePixelRatio||1;
+  rcPx=size; rcanvas.style.width=size+'px'; rcanvas.style.height=size+'px';
+  rcanvas.width=Math.round(size*dpr); rcanvas.height=Math.round(size*dpr);
+  rcctx.setTransform(dpr,0,0,dpr,0,0);
+  if(RA.world) drawRace();
+}
+function startRaceAnim(){ if(rcAnimRAF) return; RA.lastT=performance.now();
+  const loop=(t)=>{ if(!$('race-screen').classList.contains('active')){ rcAnimRAF=null; return; }
+    let dt=(t-RA.lastT)/1000; RA.lastT=t; if(dt>0.05) dt=0.05;
+    if(RA.running && !RA.finished){
+      const preCd=RA.st.cd, preLap=Math.floor(RA.st.prog/RC_N), preB=RA.st.boostT>0, preG=RA.st.gems;
+      RA.acc+=dt; let steps=0;
+      while(RA.acc>=RC_DT && steps<10){ RA.acc-=RC_DT; steps++;
+        const act = RA.auto ? raceAuto(RA.st,RA.world) : {left:RA.left, right:RA.right};
+        stepRace(RA.st, RA.world, act);
+        if(RA.st.done) break; }
+      if(preCd>0 && Math.ceil(preCd)!==Math.ceil(RA.st.cd) && RA.st.cd>0) Sound.squish(0.6);
+      if(preCd>0 && RA.st.cd<=0) Sound.squish(1.3);
+      if(Math.floor(RA.st.prog/RC_N)>preLap && !RA.st.done) Sound.squish(1.1);
+      if(!preB && RA.st.boostT>0) Sound.squish(1.5);
+      if(RA.st.gems>preG) Sound.squish(0.8);
+      updateRaceHUD();
+      if(RA.st.done) winRace();
+    }
+    drawRace(); rcAnimRAF=requestAnimationFrame(loop);
+  };
+  rcAnimRAF=requestAnimationFrame(loop);
+}
+function stopRaceAnim(){ if(rcAnimRAF){ cancelAnimationFrame(rcAnimRAF); rcAnimRAF=null; } }
+const PLACETXT=['1st','2nd','3rd','4th','5th'];
+function updateRaceHUD(){ const st=RA.st, w=RA.world; if(!st||!w) return;
+  $('rc-lap').textContent=Math.min(w.laps, Math.floor(st.prog/RC_N)+1)+'/'+w.laps;
+  $('rc-place').textContent=PLACETXT[Math.min(st.place-1,4)];
+  $('rc-level').textContent='Lv '+G.levels.race; $('rc-salvage').textContent=G.salvage;
+}
+function winRace(){
+  if(RA.finished) return; RA.finished=true; RA.running=false;
+  const st=RA.st, w=RA.world, place=st.place;
+  if(RA.auto) G.levels.race=Math.max(1,G.levels.race-1);
+  else if(place===1 && st.offT<2.5) G.levels.race=Math.min(8,G.levels.race+2);
+  else if(place===1) G.levels.race=Math.min(8,G.levels.race+1);
+  else if(place>=3) G.levels.race=Math.max(1,G.levels.race-1);
+  const rew=claimFeat('race', FEATS[5].reward);
+  const bonus=st.gems*2; G.salvage+=bonus; saveProgress();
+  updateRaceHUD(); Sound.win();
+  // confetti burst
+  const cols=['#ff3ea5','#25e3ff','#ffd21e','#8bff5a','#ffffff'];
+  for(let i=0;i<30;i++) RA.conf.push({ x:rcPx/2, y:rcPx*0.4, vx:(Math.random()-.5)*9, vy:(Math.random()-.5)*9-2, life:1, r:2+Math.random()*3.5, col:cols[i%cols.length] });
+  const allDone = Object.keys(G.claimed).length>=FEATS.length;
+  $('win-title').textContent = allDone ? 'BASE COMPLETE!' : 'Checkered Flag!';
+  $('win-flag').innerHTML=icon('flag');
+  const placeMsg = place===1 ? 'You took the checkered flag — goo-karts left in your dust!'
+                 : 'You finished the Grand Prix in '+PLACETXT[Math.min(place-1,4)]+' — the goo-karts are already demanding a rematch!';
+  $('win-msg').textContent = allDone
+    ? placeMsg+' Every hideout is cleared — the entire base is yours, hero!'
+    : placeMsg;
+  $('win-reward').textContent='+'+(rew+bonus)+' salvage'+(bonus?'  ('+bonus+' from gems)':'');
+  setTimeout(()=>$('win-overlay').classList.add('show'), 600);
+}
+
+// ---- rendering ----
+function rnx(v){ return v*rcPx; }
+function rrectR(x,y,w,h,r){ rcctx.beginPath(); rcctx.moveTo(x+r,y); rcctx.arcTo(x+w,y,x+w,y+h,r); rcctx.arcTo(x+w,y+h,x,y+h,r); rcctx.arcTo(x,y+h,x,y,r); rcctx.arcTo(x,y,x+w,y,r); rcctx.closePath(); }
+function drawKartAt(x,y,ang,body,isPlayer,phase){
+  const S=rcPx, L=S*0.052, W=S*0.034;
+  rcctx.save(); rcctx.translate(x,y); rcctx.rotate(ang);
+  // wheels
+  rcctx.fillStyle='#26262f'; rcctx.strokeStyle='#160f22'; rcctx.lineWidth=1.6;
+  for(const [wx,wy] of [[-L*0.32,-W*0.62],[L*0.32,-W*0.62],[-L*0.32,W*0.62],[L*0.32,W*0.62]]){
+    rrectR(wx-L*0.14, wy-W*0.16, L*0.28, W*0.32, 2); rcctx.fill(); rcctx.stroke(); }
+  // body
+  rcctx.fillStyle=body; rcctx.strokeStyle='#160f22'; rcctx.lineWidth=2.4;
+  rrectR(-L/2,-W/2,L,W,W*0.4); rcctx.fill(); rcctx.stroke();
+  // nose stripe
+  rcctx.fillStyle='rgba(255,255,255,.45)'; rrectR(L*0.16,-W*0.28,L*0.24,W*0.56,2); rcctx.fill();
+  // driver
+  if(isPlayer){
+    rcctx.fillStyle='#f2c28b'; rcctx.strokeStyle='#160f22'; rcctx.lineWidth=1.8;
+    rcctx.beginPath(); rcctx.arc(-L*0.08,0,W*0.34,0,7); rcctx.fill(); rcctx.stroke();
+    rcctx.fillStyle='#e64d52'; rcctx.beginPath(); rcctx.arc(-L*0.08,0,W*0.34,Math.PI*0.6,Math.PI*1.55); rcctx.fill(); rcctx.stroke();
+  } else {
+    rcctx.fillStyle='#5fd43a'; rcctx.strokeStyle='#160f22'; rcctx.lineWidth=1.8;
+    rcctx.beginPath(); rcctx.arc(-L*0.08,0,W*0.36,0,7); rcctx.fill(); rcctx.stroke();
+    rcctx.fillStyle='#fff'; rcctx.beginPath(); rcctx.arc(-L*0.02,-W*0.12,W*0.13,0,7); rcctx.fill();
+    rcctx.beginPath(); rcctx.arc(-L*0.02,W*0.12,W*0.13,0,7); rcctx.fill();
+    rcctx.fillStyle='#160f22'; rcctx.beginPath(); rcctx.arc(L*0.0,-W*0.12,W*0.06,0,7); rcctx.fill();
+    rcctx.beginPath(); rcctx.arc(L*0.0,W*0.12,W*0.06,0,7); rcctx.fill();
+  }
+  rcctx.restore();
+}
+function drawRace(){
+  const w=RA.world, st=RA.st; if(!w||!st) return; const S=rcPx;
+  rcctx.clearRect(0,0,S,S);
+  // grass field
+  const bg=rcctx.createLinearGradient(0,0,0,S); bg.addColorStop(0,'#2f5a3b'); bg.addColorStop(1,'#26402f');
+  rcctx.fillStyle=bg; rcctx.fillRect(0,0,S,S);
+  rcctx.fillStyle='rgba(255,255,255,0.045)';
+  for(let yy=10; yy<S; yy+=24){ for(let xx=((yy/24|0)%2)*12+8; xx<S; xx+=24){ rcctx.beginPath(); rcctx.arc(xx,yy,1.5,0,7); rcctx.fill(); } }
+  // track path
+  const path=new Path2D();
+  path.moveTo(rnx(w.cl[0][0]), rnx(w.cl[0][1]));
+  for(let i=1;i<RC_N;i++) path.lineTo(rnx(w.cl[i][0]), rnx(w.cl[i][1]));
+  path.closePath();
+  rcctx.lineJoin='round';
+  rcctx.strokeStyle='#160f22'; rcctx.lineWidth=rnx(w.width)+7; rcctx.stroke(path);   // ink edge
+  rcctx.strokeStyle='#4a4458'; rcctx.lineWidth=rnx(w.width); rcctx.stroke(path);     // asphalt
+  rcctx.strokeStyle='rgba(255,255,255,.5)'; rcctx.lineWidth=2; rcctx.setLineDash([8,10]); rcctx.stroke(path); rcctx.setLineDash([]);
+  // start / finish line
+  const t0=rcTangent(w.cl,0), p0=w.cl[0], nx=Math.cos(t0+Math.PI/2), ny=Math.sin(t0+Math.PI/2);
+  const hw=w.width/2;
+  for(let k=-3;k<3;k++){ for(let j=0;j<2;j++){
+    const a=hw*k/3, b=hw*(k+1)/3, off=(j-0.5)*0.008;
+    rcctx.fillStyle=((k+j)%2===0)?'#fff7ea':'#160f22';
+    rcctx.beginPath();
+    rcctx.moveTo(rnx(p0[0]+nx*a+Math.cos(t0)*(off)), rnx(p0[1]+ny*a+Math.sin(t0)*(off)));
+    rcctx.lineTo(rnx(p0[0]+nx*b+Math.cos(t0)*(off)), rnx(p0[1]+ny*b+Math.sin(t0)*(off)));
+    rcctx.lineTo(rnx(p0[0]+nx*b+Math.cos(t0)*(off+0.008)), rnx(p0[1]+ny*b+Math.sin(t0)*(off+0.008)));
+    rcctx.lineTo(rnx(p0[0]+nx*a+Math.cos(t0)*(off+0.008)), rnx(p0[1]+ny*a+Math.sin(t0)*(off+0.008)));
+    rcctx.closePath(); rcctx.fill(); } }
+  // boost pads (yellow chevrons on the asphalt)
+  for(const pd of w.pads){ const i=pd.idx, p=w.cl[i], t=rcTangent(w.cl,i);
+    rcctx.save(); rcctx.translate(rnx(p[0]),rnx(p[1])); rcctx.rotate(t);
+    const gl=0.6+0.4*Math.sin(st.phase*6);
+    rcctx.strokeStyle='rgba(255,210,30,'+gl+')'; rcctx.lineWidth=4.5; rcctx.lineCap='round';
+    for(const off of [-7,2,11]){ rcctx.beginPath(); rcctx.moveTo(off-5,-8); rcctx.lineTo(off+4,0); rcctx.lineTo(off-5,8); rcctx.stroke(); }
+    rcctx.restore(); }
+  // gems
+  for(let gi=0; gi<w.gems.length; gi++){ if(st.got.has(gi)) continue; const g=w.gems[gi];
+    const i=g.idx, t=rcTangent(w.cl,i), p=w.cl[i];
+    const gx=rnx(p[0]+Math.cos(t+Math.PI/2)*g.off), gy=rnx(p[1]+Math.sin(t+Math.PI/2)*g.off), r=S*0.016;
+    rcctx.save(); rcctx.translate(gx,gy);
+    rcctx.fillStyle='#25e3ff'; rcctx.strokeStyle='#160f22'; rcctx.lineWidth=2.2;
+    rcctx.shadowColor='rgba(37,227,255,.7)'; rcctx.shadowBlur=7;
+    rcctx.beginPath(); rcctx.moveTo(0,-r); rcctx.lineTo(r*0.8,0); rcctx.lineTo(0,r); rcctx.lineTo(-r*0.8,0); rcctx.closePath(); rcctx.fill(); rcctx.stroke();
+    rcctx.restore(); }
+  // rival goo-karts
+  for(let k=0;k<w.ais.length;k++){ const ai=st.ais[k]; if(ai.fin) continue;
+    const fp=ai.prog%RC_N, i0=Math.floor(fp)%RC_N, i1=(i0+1)%RC_N, fr=fp-Math.floor(fp);
+    const t=rcTangent(w.cl,i0), off=w.ais[k].off;
+    const bx=w.cl[i0][0]*(1-fr)+w.cl[i1][0]*fr + Math.cos(t+Math.PI/2)*off;
+    const by=w.cl[i0][1]*(1-fr)+w.cl[i1][1]*fr + Math.sin(t+Math.PI/2)*off;
+    const bodies=['#8a5a2b','#b98bff','#25a3ff'];
+    drawKartAt(rnx(bx), rnx(by), t, bodies[k%bodies.length], false, st.phase); }
+  // player kart (boost aura + trail)
+  if(st.boostT>0){ rcctx.save(); rcctx.shadowColor='#ffd21e'; rcctx.shadowBlur=16;
+    rcctx.fillStyle='rgba(255,210,30,.28)'; rcctx.beginPath(); rcctx.arc(rnx(st.x),rnx(st.y),S*0.036,0,7); rcctx.fill(); rcctx.restore(); }
+  drawKartAt(rnx(st.x), rnx(st.y), st.ang, '#e64d52', true, st.phase);
+  // countdown / GO!
+  if(st.cd>0){
+    const n=Math.ceil(st.cd-0.2);
+    rcctx.save(); rcctx.textAlign='center'; rcctx.fillStyle='#ffd21e'; rcctx.strokeStyle='#160f22'; rcctx.lineWidth=6;
+    rcctx.font='900 '+Math.round(S*0.2)+'px system-ui';
+    const txt=n>=1? String(n) : 'GO!';
+    rcctx.strokeText(txt, S/2, S*0.3); rcctx.fillText(txt, S/2, S*0.3); rcctx.restore();
+  } else if(st.phase<3.2 && !RA.finished){
+    rcctx.save(); rcctx.textAlign='center'; rcctx.globalAlpha=Math.max(0,3.2-st.phase)/1.4;
+    rcctx.fillStyle='#8bff5a'; rcctx.strokeStyle='#160f22'; rcctx.lineWidth=4;
+    rcctx.font='900 '+Math.round(S*0.055)+'px system-ui';
+    rcctx.strokeText('GO!  Hold a side to steer!', S/2, S*0.3); rcctx.fillText('GO!  Hold a side to steer!', S/2, S*0.3);
+    rcctx.restore();
+  }
+  // confetti
+  if(RA.conf.length){ let alive=false;
+    for(const p of RA.conf){ p.x+=p.vx; p.y+=p.vy; p.vy+=0.3; p.life-=0.018; if(p.life>0){ alive=true;
+      rcctx.globalAlpha=Math.max(0,p.life); rcctx.fillStyle=p.col; rcctx.beginPath(); rcctx.arc(p.x,p.y,p.r,0,7); rcctx.fill(); } }
+    rcctx.globalAlpha=1; if(!alive) RA.conf=[]; }
+}
+
+$('rc-back').onclick =()=>{ stopRaceAnim(); show('map-screen'); renderMap(); };
+$('rc-reset').onclick=()=>{ if(!RA.world) return; RA.st=newRaceState(RA.world); RA.finished=false; RA.running=true; RA.auto=false; RA.conf=[]; RA.acc=0; RA.lastT=performance.now(); updateRaceHUD(); };
+$('rc-new').onclick  =()=>startRace();
+$('rc-hint').onclick =()=>{ if(RA.finished) return; RA.auto=true; toast('Auto-Drive — watch the racing line!'); };
+function rcPoint(e){ const rect=rcanvas.getBoundingClientRect(); return (e.clientX-rect.left)/rect.width; }
+rcanvas.addEventListener('pointerdown', e=>{ if(!RA.running||RA.finished) return; RA.auto=false;
+  const nx=rcPoint(e); RA.left=nx<0.5; RA.right=nx>=0.5; });
+rcanvas.addEventListener('pointermove', e=>{ if(!RA.left&&!RA.right) return;
+  const nx=rcPoint(e); RA.left=nx<0.5; RA.right=nx>=0.5; });
+rcanvas.addEventListener('pointerup',   ()=>{ RA.left=false; RA.right=false; });
+rcanvas.addEventListener('pointerleave',()=>{ RA.left=false; RA.right=false; });
+window.addEventListener('keydown', e=>{ if(!$('race-screen').classList.contains('active')) return;
+  if(e.code==='ArrowLeft'){ RA.auto=false; RA.left=true; e.preventDefault(); }
+  else if(e.code==='ArrowRight'){ RA.auto=false; RA.right=true; e.preventDefault(); } });
+window.addEventListener('keyup', e=>{ if(e.code==='ArrowLeft') RA.left=false; if(e.code==='ArrowRight') RA.right=false; });
+
 // ---------- boot ----------
 // Small public namespace (also handy for automated testing).
 window.FOAS = { makePuzzle, buildCandidate, isSolved, optimalMoves, computePower, config,
@@ -2703,8 +3045,9 @@ window.FOAS = { makePuzzle, buildCandidate, isSolved, optimalMoves, computePower
                 buildVault, vaultFeedback, vaultConfig,
                 buildBridge, bridgeLeft, bridgeRight, bridgeSolved,
                 buildLaunch, traceShot, launchReachAll, launchSolved, findAim,
-                buildDash, simulateDash, stepDash, dashAuto, newDashState };
-window.addEventListener('resize', ()=>{ fitCanvas(); fitBeacon(); fitWell(); fitBridge(); fitLaunch(); fitDash(); });
+                buildDash, simulateDash, stepDash, dashAuto, newDashState,
+                buildRace, simulateRace, stepRace, raceAuto, newRaceState, rcConfig };
+window.addEventListener('resize', ()=>{ fitCanvas(); fitBeacon(); fitWell(); fitBridge(); fitLaunch(); fitDash(); fitRace(); });
 paintIcons();      // fill all static [data-ic] placeholders with vector icons
 Sound.load();
 (function(){ const mb=$('mute-btn');
@@ -2716,7 +3059,7 @@ loadProgress();
 renderMap();
 
 // Build tag — tiny corner label so you can confirm which version a device is running.
-const BUILD='v14';
+const BUILD='v15';
 (function(){ const v=document.createElement('div'); v.textContent='build '+BUILD;
   v.style.cssText='position:fixed;right:6px;bottom:5px;font:600 10px system-ui;color:rgba(255,255,255,.28);z-index:60;pointer-events:none;';
   document.body.appendChild(v); })();

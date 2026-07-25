@@ -2,11 +2,12 @@
 
 An installable web game for an advanced young learner. Rebuild a ruined world
 one **Feat** at a time by solving logic puzzles that stretch spatial reasoning
-and planning — wrapped in a bold "explorer at dusk" adventure. This build has **all five** Feats fully playable — **"Defend the Treehouse"**
+and planning — wrapped in a bold "explorer at dusk" adventure. This build has **all six** Feats fully playable — **"Defend the Treehouse"**
 (a physics slingshot — trajectory & angles), **"Light the Beacon"** (block coding), **"Purify the Well"**
-(fractions & ratios), **"Crack the Vault"** (deduction / code-breaking), and
-**"Junkyard Dash"** (a reflex-and-timing obstacle-runner) — a complete campaign,
-with the world-map, salvage, and per-Feat adaptive difficulty tying it together.
+(fractions & ratios), **"Crack the Vault"** (deduction / code-breaking),
+**"Junkyard Dash"** (a reflex-and-timing obstacle-runner), and **"Goo-Kart
+Grand Prix"** (top-down kart racing) — a complete campaign, with the world-map,
+salvage, and per-Feat adaptive difficulty tying it together.
 
 **Art direction — comic-book "kid-built fort vs. goop-monsters."** A high-energy
 middle-grade graphic-novel look (think *Last Kids on Earth*): bold ink outlines,
@@ -107,11 +108,21 @@ cars, **hold the bottom** to **duck** under hanging pipes, and scoop up **gems**
 temporary **power-ups** — a **magnet** that vacuums gems, a **shield** that soaks one
 hit, and a **boost** that blasts her straight through everything. There are no lives:
 a bump just costs a few gems and a stumble, never a game-over, so she keeps going and
-learns the timing. Reach the bridge to open the way to new lands and complete the whole
-base. Every route is procedurally generated and *proven clearable* before it's dealt —
-one deterministic physics model runs the play, an auto-pilot "Auto-Run" demo, and the
-solvability check, so no layout is ever an unavoidable hit. Gems collected convert to
-bonus salvage.
+learns the timing. Reach the bridge to open the way to new lands. Every route is
+procedurally generated and *proven clearable* before it's dealt — one deterministic
+physics model runs the play, an auto-pilot "Auto-Run" demo, and the solvability check,
+so no layout is ever an unavoidable hit. Gems collected convert to bonus salvage.
+
+**Goo-Kart Grand Prix** — The campaign finale, across the river: top-down kart
+racing on the Scrapyard Speedway. Her kart auto-accelerates; she holds the **left or
+right side of the track to steer**, riding glowing **boost pads**, dodging the slow
+grass, and grabbing gems while racing two or three goop-monster karts (with a gentle
+rubber-band so races stay close, never hopeless). After a 3-2-1 countdown it's laps,
+places, and a checkered flag — finishing *always* completes the Feat, but winning
+clean pushes the challenge level up: tracks get twistier and narrower, rivals faster.
+Every procedurally generated track is verified raceable by a deterministic auto-drive
+sim before it's used, and the same "Auto-Drive" button lets her watch the racing line.
+Clearing the Grand Prix completes the entire base.
 
 All Feats have no lives, no timers, and no way to lose, and each has its own
 adaptive challenge level that rises automatically the faster and cleaner she
